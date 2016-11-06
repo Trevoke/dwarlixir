@@ -9,8 +9,14 @@ defmodule Dwarf do
     {:ok, %{x: x, y: y}}
   end
 
-  def init(args) do
-    IO.inspect args
-    end
+  def handle_info({:be_dwarfy, world}, state) do
+
+    prop_to_change = Enum.random([:x, :y])
+    new_value = :rand.uniform(3) - 2
+    new_state = Map.put(state, prop_to_change, state[prop_to_change] + new_value)
+        IO.inspect new_state
+    {:noreply, new_state}
+  end
+
 end
 

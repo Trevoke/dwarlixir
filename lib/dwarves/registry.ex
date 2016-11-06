@@ -43,11 +43,12 @@ defmodule Dwarves.Registry do
   def init(_args) do
     # 3. We have replaced the names map by the ETS table
     names = :ets.new(__MODULE__, [:named_table, read_concurrency: true])
-    Enum.each((1..50), fn x ->
+    refs = Enum.map((1..50), fn x ->
       {:ok, dwarf_pid} = Dwarf.start_link([initial_values: %{x: x, y: x}])
       :ets.insert(__MODULE__, {"dwarf#{x}", dwarf_pid})
+      :timer.send_interval(2000, dwarf_pid, {:be_dwarfy, Dwarves.World})
+      dwarf_pid
     end)
-    refs  = %{}
     {:ok, {names, refs}}
   end
 
