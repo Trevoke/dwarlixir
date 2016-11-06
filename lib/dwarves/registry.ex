@@ -40,29 +40,32 @@ defmodule Dwarves.Registry do
 
   ## Server callbacks
 
-  def init(table) do
+  def init(_args) do
     # 3. We have replaced the names map by the ETS table
-    names = :ets.new(table, [:named_table, read_concurrency: true])
-    Enum.each((1..50), fn x -> :ets.insert(table, {"dwarf#{x}", %Dwarf{x: x, y: x}}) end)
+    names = :ets.new(__MODULE__, [:named_table, read_concurrency: true])
+    Enum.each((1..50), fn x ->
+      {:ok, dwarf_pid} = Dwarf.start_link([initial_values: %{x: x, y: x}])
+      :ets.insert(__MODULE__, {"dwarf#{x}", dwarf_pid})
+    end)
     refs  = %{}
     {:ok, {names, refs}}
   end
 
   # 4. The previous handle_call callback for lookup was removed
 
-  def handle_cast({:create, name}, {names, refs}) do
-    # 5. Read and write to the ETS table instead of the map
-    case lookup(names, name) do
-      {:ok, _pid} ->
-        {:noreply, {names, refs}}
-      :error -> #TODO replace with "add a dwarf to ets"
-        {:ok, pid} = Dwarves.Bucket.Supervisor.start_bucket
-        ref = Process.monitor(pid)
-        refs = Map.put(refs, ref, name)
-        :ets.insert(names, {name, pid})
-        {:noreply, {names, refs}}
-    end
-  end
+  # def handle_cast({:create, name}, {names, refs}) do
+  #   # 5. Read and write to the ETS table instead of the map
+  #   case lookup(names, name) do
+  #     {:ok, _pid} ->
+  #       {:noreply, {names, refs}}
+  #     :error -> #TODO replace with "add a dwarf to ets"
+  #       {:ok, pid} = Dwarves.Bucket.Supervisor.start_bucket
+  #       ref = Process.monitor(pid)
+  #       refs = Map.put(refs, ref, name)
+  #       :ets.insert(names, {name, pid})
+  #       {:noreply, {names, refs}}
+  #   end
+  # end
 
   def handle_info({:DOWN, ref, :process, _pid, _reason}, {names, refs}) do
     # 6. Delete from the ETS table instead of the map
