@@ -7,6 +7,7 @@ defmodule Dwarves.Supervisor do
 
   def init(:ok) do
     children = [
+      worker(Dwarves.World, [[name: Dwarves.World]], restart: :permanent),
       worker(Dwarves.Registry, [[name: Dwarves.Registry]], restart: :permanent)
     ]
 

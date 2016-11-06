@@ -46,7 +46,7 @@ defmodule Dwarves.Registry do
     refs = Enum.map((1..50), fn x ->
       {:ok, dwarf_pid} = Dwarf.start_link([initial_values: %{x: x, y: x}])
       :ets.insert(__MODULE__, {"dwarf#{x}", dwarf_pid})
-      :timer.send_interval(2000, dwarf_pid, {:be_dwarfy, Dwarves.World})
+      :timer.send_interval(1000, dwarf_pid, {:be_dwarfy, Dwarves.World})
       dwarf_pid
     end)
     {:ok, {names, refs}}
