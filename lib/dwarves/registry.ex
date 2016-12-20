@@ -1,14 +1,9 @@
 defmodule Dwarves.Registry do
   use GenServer
 
-  ## Client API
-
-  @doc """
-  Starts the registry with the given `name`.
-  """
-  def start_link([name: name]) do
+  def start_link(opts) do
     # 1. Pass the name to GenServer's init
-    GenServer.start_link(__MODULE__, name, name: name)
+    GenServer.start_link(__MODULE__, Dwarves.Registry, name: :dwarves_registry)
   end
 
   @doc """
@@ -38,13 +33,17 @@ defmodule Dwarves.Registry do
     GenServer.stop(server)
   end
 
+  def whereis_name(dwarf) do
+    GenServer.call(:registry, {:whereis_name, dwarf})
+  end
+
   ## Server callbacks
 
   def init(_args) do
     # 3. We have replaced the names map by the ETS table
     names = :ets.new(__MODULE__, [:named_table, read_concurrency: true])
-    refs = Enum.map((1..50), fn x ->
-      {:ok, dwarf_pid} = Dwarf.start_link([initial_values: %{x: x, y: x}])
+    refs = Enum.map((1..40), fn x ->
+      {:ok, dwarf_pid} = Dwarf.start_link([initial_values: %{x: x, y: x}, name: Faker.Name.name])
       :ets.insert(__MODULE__, {"dwarf#{x}", dwarf_pid})
       :timer.send_interval(1000, dwarf_pid, {:be_dwarfy, Dwarves.World})
       dwarf_pid
