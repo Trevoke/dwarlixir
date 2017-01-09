@@ -15,13 +15,14 @@ defmodule Dwarf do
     new_location = Map.put(location, prop_to_change, location[prop_to_change] + new_value)
 
     location_available = GenServer.call(world, {:location_available?, new_location})
-    IO.puts "#{name} is at #{Kernel.inspect location} and wants to go to #{Kernel.inspect new_location}"
+    log = "#{name} is at #{Kernel.inspect location} and wants to go to #{Kernel.inspect new_location}"
+    IO.puts log
     cond do
       location == new_location ->
         IO.inspect "#{name} has decided to stay put."
         {:noreply, state}
       location_available ->
-        GenServer.cast(world, {:move, self, new_location})
+        GenServer.cast(world, {:move, self, new_location, location})
         IO.inspect "#{name} is ambulating."
         new_state = %{ state | location: new_location}
         {:noreply, new_state}

@@ -16,18 +16,29 @@ defmodule Dwarves.World do
   end
 
   def init(args) do
-    {:ok, %{}} # %{ PID => [x, y] }
+    {:ok, %{}} # %{ %{x: x, y: y} => [PID] }
   end
 
   ## Server callbacks
 
-  def handle_call({:location_available?, %{x: x, y: y}}, _pid, state) do
-    occupied = Map.values(state) |> Enum.member?(%{x: x, y: y})
+  def handle_call({:location_available?, location}, _pid, state) do
+    occupied = Map.has_key?(state, location)
     {:reply, !occupied, state}
   end
 
-  def handle_cast({:move, pid, new_loc}, state) do
-    {:noreply, Map.put(state, pid, new_loc)}
+  def handle_cast({:spawn, pid, loc}, state) do
+    new_state = Map.put_new(state, loc, [])
+    |> update_in([loc], fn(things_at_loc) -> things_at_loc ++ [pid] end)
+
+    {:noreply, new_state}
+  end
+
+  def handle_cast({:move, pid, new_loc, loc}, state) do
+    new_state = Map.put_new(state, new_loc, [])
+    |> update_in([new_loc], fn(things_at_loc) -> things_at_loc ++ [pid] end)
+    |> update_in([loc], fn(things_at_loc) -> List.delete(things_at_loc, pid) end)
+
+    {:noreply, new_state}
   end
 
 end
