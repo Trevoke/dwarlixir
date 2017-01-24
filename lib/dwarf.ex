@@ -21,17 +21,17 @@ defmodule Dwarf do
     #IO.puts log
     cond do
       old_loc == new_location ->
-        #IO.inspect "#{name} has decided to stay put."
+        IO.puts "#{log}\n#{name} has decided to stay put."
         {:noreply, state}
       location_available ->
         Dwarves.World.move(new_location)
-        #IO.inspect "#{name} is ambulating."
+        IO.puts "#{log}\n#{name} is ambulating."
         {:noreply, state}
       !location_available ->
-        #IO.inspect "#{name} can't move!"
+        IO.puts "#{name} can't move!"
         {:noreply, state}
       true ->
-        #IO.inspect "Something weird happened to #{name}"
+        IO.puts "Something weird happened to #{name}"
         {:noreply, state}
     end
   end
