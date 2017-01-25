@@ -1,7 +1,7 @@
 defmodule Dwarves.World do
 
-  def start_link(opts) do
-    Registry.start_link(:unique, __MODULE__)
+  def start_link(_opts) do
+    Registry.start_link(:unique, __MODULE__, partitions: System.schedulers_online)
   end
 
   def location_available?(loc) do

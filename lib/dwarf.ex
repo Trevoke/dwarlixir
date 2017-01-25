@@ -7,10 +7,11 @@ defmodule Dwarf do
 
   def init([initial_loc: initial_loc, name: name]) do
     Dwarves.World.add(initial_loc)
+    Dwarves.Registry.add(:subject_to_time, [])
     {:ok, %{name: name}}
   end
 
-  def handle_info({:be_dwarfy}, %{name: name} = state) do
+  def handle_cast({:be}, %{name: name} = state) do
     old_loc = Dwarves.World.current_location
     prop_to_change = Enum.random([:x, :y])
     new_value = :rand.uniform(3) - 2
