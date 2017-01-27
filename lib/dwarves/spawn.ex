@@ -10,7 +10,7 @@ defmodule Dwarves.Spawn do
 
   def init(_args) do
     Enum.each((1..40), fn x ->
-      initial_loc = %{x: x, y: x}
+      initial_loc = {x, x}
       {:ok, _} = Dwarf.start_link([initial_loc: initial_loc, name: Faker.Name.name])
     end)
     {:ok, %{}}
