@@ -5,7 +5,7 @@ defmodule Dwarves.Registry do
     GenServer.start_link(__MODULE__, opts, name: :dwarves_registry)
   end
 
-  def init(opts) do
+  def init(_opts) do
     Registry.start_link(:duplicate, Registry.Test, partitions: System.schedulers_online)
   end
 

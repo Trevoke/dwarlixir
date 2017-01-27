@@ -14,7 +14,7 @@ defmodule Dwarves.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :faker, :gproc],
+    [applications: [:logger, :faker],
      mod: {Dwarves, []}]
   end
 
@@ -30,7 +30,6 @@ defmodule Dwarves.Mixfile do
   defp deps do
     [
       {:faker, "~> 0.7.0"},
-      {:gproc, "~> 0.6.1"},
       {:ex2ms, "~> 1.0"}
     ]
   end

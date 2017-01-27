@@ -5,7 +5,7 @@ defmodule Dwarves.Timers do
     GenServer.start_link(__MODULE__, opts, name: :dwarves_timers)
   end
 
-  def init(:start_heartbeat) do
+  def init({:start_heartbeat}) do
     {:ok, %{heartbeat: heartbeat_timer()}}
   end
 

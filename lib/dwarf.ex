@@ -5,10 +5,10 @@ defmodule Dwarf do
     GenServer.start_link(__MODULE__, args)
   end
 
-  def init([initial_loc: initial_loc, name: name]) do
+  def init(%{location: initial_loc} = state) do
     Dwarves.World.add(initial_loc)
     Dwarves.Registry.add(:subject_to_time, [])
-    {:ok, %{name: name, location: initial_loc}}
+    {:ok, state}
   end
 
   defp new_location({x, y}) do
@@ -17,26 +17,27 @@ defmodule Dwarf do
     {x, y}
   end
 
-  def handle_cast({:be}, %{name: name, location: current_location} = state) do
-    new_location = new_location(current_location)
+  def handle_cast({:be}, %{lifespan: 0} = state), do: {:noreply, state}
+  def handle_cast({:be}, %{name: name, lifespan: 1} = state) do
+    IO.puts "#{name} has just died."
+    {:noreply, %{state | lifespan: 0}}
+  end
 
+  def handle_cast({:be}, %{
+                    name: name,
+                    location: current_location,
+                    lifespan: lifespan
+                  } = state) do
+    new_state = %{state | lifespan: lifespan - 1}
+    new_location = new_location(current_location)
     location_available = Dwarves.World.location_available?(new_location)
-    log = "#{name} is at #{Kernel.inspect current_location} and wants to go to #{Kernel.inspect new_location}"
-    #IO.puts log
-    cond do
-      current_location == new_location ->
-        IO.puts "#{log}\n#{name} has decided to stay put."
-        {:noreply, state}
-      location_available ->
-        Dwarves.World.move(current_location, new_location)
-        IO.puts "#{log}\n#{name} is ambulating."
-        {:noreply, state}
-      !location_available ->
-        IO.puts "#{name} can't move!"
-        {:noreply, state}
-      true ->
-        IO.puts "Something weird happened to #{name}"
-        {:noreply, state}
+
+    if location_available do
+      Dwarves.World.move(current_location, new_location)
+      IO.puts "#{name} is at #{Kernel.inspect current_location} and wants to go to #{Kernel.inspect new_location}"
+      {:noreply, %{new_state | location: new_location}}
+    else
+      {:noreply, new_state}
     end
   end
 
