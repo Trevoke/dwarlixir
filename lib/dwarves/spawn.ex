@@ -5,7 +5,7 @@ defmodule Dwarves.Spawn do
     GenServer.start_link(__MODULE__, args, name: :dwarves_spawn)
   end
 
-  @genders [:male, :female]
+  @genders_and_attraction %{male: :female, female: :male} # TODO vary the pleasures
 
   def init(args) do
     Enum.each((1..40), fn x ->
@@ -31,7 +31,7 @@ defmodule Dwarves.Spawn do
         location: location,
         name: Faker.Name.name,
         lifespan: lifespan,
-        gender: List.first Enum.shuffle(@genders)
+        gender: List.first Enum.shuffle(@genders_and_attraction)
       })
   end
 

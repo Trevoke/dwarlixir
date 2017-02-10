@@ -10,7 +10,8 @@ defmodule Dwarves.Supervisor do
       worker(Dwarves.World, [[]], id: :world), # spawn, move, loc_open?
       worker(Dwarves.Registry, [[]], id: :dwarves),
       worker(Dwarves.Spawn, [{:short_lifespan}], restart: :permanent),
-      worker(Dwarves.Timers, [{:start_heartbeat}], restart: :permanent)
+#      worker(Dwarves.Timers, [{:start_heartbeat}], restart: :permanent)
+       worker(Dwarves.Timers, [[]], restart: :permanent)
     ]
 
     supervise(children, strategy: :one_for_one)

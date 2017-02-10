@@ -9,7 +9,7 @@ defmodule Dwarves.Timers do
     {:ok, %{heartbeat: heartbeat_timer()}}
   end
 
-  def init, do: {:ok, %{}}
+  def init(_args), do: {:ok, %{}}
 
   def start_heartbeat do
     GenServer.call(:dwarves_timers, {:start_heartbeat})

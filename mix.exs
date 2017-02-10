@@ -30,7 +30,8 @@ defmodule Dwarves.Mixfile do
   defp deps do
     [
       {:faker, "~> 0.7.0"},
-      {:ex2ms, "~> 1.0"}
+      {:ex2ms, "~> 1.0"},
+      {:dialyxir, "~> 0.4", only: [:dev], runtime: false}
     ]
   end
 end
