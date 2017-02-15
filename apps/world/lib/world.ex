@@ -1,18 +1,30 @@
 defmodule World do
-  @moduledoc """
-  Documentation for World.
-  """
+  use Supervisor
 
-  @doc """
-  Hello world.
+  def start_link(opts) do
+    Supervisor.start_link(__MODULE__, opts)
+  end
 
-  ## Examples
+  def init(_opts) do
+    children = map_data()
+    |> Enum.map(fn(room) -> worker(World.Location, [room], id: room.room_id) end)
 
-      iex> World.hello
-      :world
+    supervise(children, strategy: :one_for_one)
+  end
 
-  """
-  def hello do
-    :world
+  defp map_data do
+    [
+      room(1, [2, 3], "The center of the universe"),
+      room(2, [1, 3], "A room with a soft light"),
+      room(3, [1, 2], "Darkness.")
+    ]
+  end
+
+  defp room(id, ids_of_rooms_linking_to_this_one, desc) do
+    %{
+      room_id: id,
+      description: desc,
+      incoming_pathways: ids_of_rooms_linking_to_this_one
+    }
   end
 end
