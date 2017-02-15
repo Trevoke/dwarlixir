@@ -66,6 +66,4 @@ defmodule Dwarf do
     {x, y}
   end
 
-
 end
-

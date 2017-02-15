@@ -1,3 +1,4 @@
-# Dwarves
+# Dwarlixir
 
-A dwarf-fortress-inspired codebase
+**TODO: Add description**
+
