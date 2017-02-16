@@ -12,7 +12,7 @@ defmodule World.Application do
     children = [
       supervisor(Registry, [:unique, World.LocationRegistry], id: :location_registry),
       supervisor(Registry, [:unique, World.PathwayRegistry], id: :pathway_registry),
-      worker(World, [[]])
+      worker(World, [])
       # Starts a worker by calling: World.Worker.start_link(arg1, arg2, arg3)
       # worker(World.Worker, [arg1, arg2, arg3]),
     ]

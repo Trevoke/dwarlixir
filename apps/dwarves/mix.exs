@@ -18,7 +18,7 @@ defmodule Dwarves.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [applications: [:logger, :faker],
+    [extra_applications: [:logger],
      mod: {Dwarves, []}]
   end
 
@@ -35,7 +35,8 @@ defmodule Dwarves.Mixfile do
     [
       {:faker, "~> 0.7.0"},
       {:ex2ms, "~> 1.0"},
-      {:dialyxir, "~> 0.4", only: [:dev], runtime: false}
+      {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
+      {:world, in_umbrella: true}
     ]
   end
 end
