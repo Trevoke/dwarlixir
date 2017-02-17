@@ -6,7 +6,9 @@ defmodule World.Pathway do
   end
 
   def init(%{from: from_id, to: to_id} = state) do
-    Registry.register(World.PathwayRegistry, :exit, {from_id, to_id})
+    {:ok, _} =
+      World.PathwayRegistry
+      |> Registry.register(:exit, %{from: from_id, to: to_id})
     {:ok, state}
   end
 end

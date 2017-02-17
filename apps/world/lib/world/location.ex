@@ -13,7 +13,9 @@ defmodule World.Location do
       World.Pathway.start_link(%{from: pathway_id, to: id})
     end
 
-    Registry.register(World.LocationRegistry, id, nil)
+    IO.puts id
+    IO.inspect self
+    {:ok, _} = Registry.register(World.LocationRegistry, :location, id)
 
     {:ok, state}
   end

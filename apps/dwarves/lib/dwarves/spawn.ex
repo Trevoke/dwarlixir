@@ -5,18 +5,29 @@ defmodule Dwarves.Spawn do
     GenServer.start_link(__MODULE__, args, name: :dwarves_spawn)
   end
 
-  @genders_and_attraction %{male: :female, female: :male} # TODO vary the pleasures
+  # TODO vary the pleasures
+  @genders_and_attraction %{male: :female, female: :male}
 
   def init(args) do
+    rooms =
+      World.LocationRegistry
+      |> Registry.match(:_, :_)
+      |> Enum.map(fn({_, room_id}) -> room_id end)
+
+    IO.inspect rooms
+
     Enum.each((1..40), fn x ->
-      initial_loc = {x, x}
+      initial_loc =
+        rooms
+        |> Enum.shuffle
+        |> List.first
       birth(initial_loc, lifespan: args)
     end)
     {:ok, %{}}
   end
 
-  def handle_cast({:birth, %{location: {x, y}, lifespan: lifespan}}, state) do
-    birth({x, y}, lifespan: lifespan)
+  def handle_cast({:birth, %{location: location, lifespan: lifespan_type}}, state) do
+    birth(location, lifespan: lifespan_type)
     {:noreply, state}
   end
 
@@ -24,14 +35,18 @@ defmodule Dwarves.Spawn do
     {:noreply, state}
   end
 
-  defp birth(location, lifespan: lifespan) do
-    lifespan = random_lifespan(lifespan)
+  defp birth(location_id, lifespan: lifespan_type) do
+    lifespan = random_lifespan(lifespan_type)
+    gender =
+      @genders_and_attraction
+      |> Enum.shuffle
+      |> List.first
     {:ok, _} = Dwarf.start_link(
       %{
-        location: location,
+        location: location_id,
         name: Faker.Name.name,
         lifespan: lifespan,
-        gender: List.first Enum.shuffle(@genders_and_attraction)
+        gender: gender
       })
   end
 

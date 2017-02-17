@@ -16,8 +16,17 @@ defmodule Dwarves.Registry do
   end
 
   def add(key, value) do
-    Registry.register(Registry.Test, key, value)
+    {:ok, _} = Registry.register(Registry.Test, key, value)
   end
+
+  def set_loc(loc) do
+    {_, _} = Registry.register(Registry.Test, loc, loc)
+  end
+
+  def set_loc(old_loc, new_loc) do
+    {_, _} = Registry.register(Registry.Test, old_loc, new_loc)
+  end
+
 
   def handle_info({:send_heartbeat}, state) do
     send_heartbeat()
