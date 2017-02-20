@@ -2,17 +2,17 @@ defmodule Dwarf do
   use GenServer
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args)
+    GenServer.start_link(__MODULE__, args, name: via_mob(args.id))
+  end
+
+  defp via_mob(id) do
+    {:via, Registry, {Registry.Mobs, id}}
   end
 
   def init(%{location: initial_loc} = state) do
-    Dwarves.Registry.set_loc(initial_loc)
-    Dwarves.Registry.add(:subject_to_time, [])
+    Registry.Tick
+    |> Registry.register(state.id, nil)
     {:ok, state}
-  end
-
-  def handle_call(:gender, _from, %{gender: gender} = state) do
-    {:reply, gender, state}
   end
 
   def handle_cast({:be}, %{lifespan: 0} = state), do: {:noreply, state}
@@ -22,18 +22,16 @@ defmodule Dwarf do
   end
 
   def handle_cast({:be}, %{
+                    id: id,
                     name: name,
                     location: location,
-                    lifespan: lifespan,
-                    gender: gender
+                    lifespan: lifespan
                   } = state) do
     new_state = %{state | lifespan: lifespan - 1}
 
-#    neighbors = sexually_compatible_neighbors(location, gender)
-
     new_location = new_location(location)
 
-    Dwarves.Registry.set_loc(location, new_location)
+    move_to(id, new_location)
 
     {:noreply, %{new_state | location: new_location}}
 
@@ -44,17 +42,14 @@ defmodule Dwarf do
     {:noreply, state}
   end
 
-  # defp sexually_compatible_neighbors(current_location, gender) do
-  #   Dwarves.World.neighbors(current_location)
-  #   |> Enum.map(fn(dwarf) -> GenServer.call(dwarf, :gender) end)
-  # end
+  defp move_to(id, new_location) do
+    Registry.update_value(Registry.Mobs, id, fn(x) -> new_location end)
+  end
 
   defp new_location(location) do
-    World.PathwayRegistry
-      |> Registry.match(:exit, %{from: location, to: :_})
-      |> Enum.map(fn({_, %{to: id}}) -> id end)
-      |> Enum.shuffle
-      |> List.first
+    World.Pathway.exits(location)
+    |> Enum.shuffle
+    |> List.first
   end
 
 end
