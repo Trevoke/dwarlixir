@@ -6,21 +6,14 @@ defmodule Dwarves.Spawn do
   end
 
   def init(args) do
-    rooms =
-      World.LocationRegistry
-      |> Registry.match(:_, :_)
-      |> Enum.map(fn({_, room_id}) -> room_id end)
-
-    IO.inspect rooms
-
     Enum.each((1..40), fn id ->
       initial_loc =
-        rooms
+        ["1", "2", "3"]
         |> Enum.shuffle
         |> List.first
       birth(id, initial_loc, lifespan: args)
     end)
-    {:ok, %{}}
+    {:ok, nil}
   end
 
   def handle_cast({:birth, %{id: id, location: location, lifespan: lifespan_type}}, state) do
@@ -35,9 +28,9 @@ defmodule Dwarves.Spawn do
   defp birth(id, location_id, lifespan: lifespan_type) do
     lifespan = random_lifespan(lifespan_type)
     {:ok, _} = Dwarf.start_link(
-      %{
+      %Dwarf{
         id: id,
-        location: location_id,
+        location_id: location_id,
         name: Faker.Name.name,
         lifespan: lifespan
       })

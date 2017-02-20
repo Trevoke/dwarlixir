@@ -13,16 +13,13 @@ defmodule World.Pathway do
   end
 
   def init(state) do
-    IO.inspect state
-    IO.inspect self
     {:ok, state}
   end
 
-  # this needs a better home than this module
   def exits(location_id) do
     World.PathwayRegistry
-    |> Registry.match(:exit, %{from: location_id})
-    |> Enum.map(fn({_, %{to: id}}) -> id end)
+    |> Registry.match(:exit, {location_id, :_})
+    |> Enum.map(fn({_, {_, id}}) -> id end)
   end
 
 end
