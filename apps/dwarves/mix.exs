@@ -36,7 +36,8 @@ defmodule Dwarves.Mixfile do
       {:faker, "~> 0.7.0"},
       {:ex2ms, "~> 1.0"},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
-      {:world, in_umbrella: true}
+      {:world, in_umbrella: true},
+      {:petick, "~> 0.0.1"}
     ]
   end
 end

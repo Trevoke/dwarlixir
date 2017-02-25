@@ -1,7 +1,7 @@
 defmodule World do
   use Supervisor
 
-  alias World.{Location, Pathway}
+  alias World.Location
 
   def start_link(opts \\ []) do
     Supervisor.start_link(__MODULE__, opts)
@@ -45,6 +45,6 @@ defmodule World do
   end
 
   defp pathway(from_id, name) do
-    %Pathway{from_id: from_id, name: name}
+    %{from_id: from_id, name: name}
   end
 end

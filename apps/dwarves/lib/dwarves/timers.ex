@@ -29,8 +29,18 @@ defmodule Dwarves.Timers do
   end
 
   defp heartbeat_timer do
-    {:ok, tref} = :timer.send_interval(1000, :dwarves_registry, {:send_heartbeat})
+    {:ok, tref} =
+      Petick.start(
+      interval: 1000,
+      callback: {__MODULE__, :send_heartbeat})
     tref
   end
+
+  def send_heartbeat(_calling_pid) do
+    Registry.dispatch(Registry.Mobs, :subject_to_time, fn entries ->
+      for {pid, _} <- entries, do: GenServer.cast(pid, {:tick})
+    end)
+  end
+
 
 end
