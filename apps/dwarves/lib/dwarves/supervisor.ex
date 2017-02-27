@@ -7,7 +7,6 @@ defmodule Dwarves.Supervisor do
 
   def init(_args) do
     children = [
-      worker(Dwarves.World, [[]], id: :world), # spawn, move, loc_open?
       supervisor(Registry, [:unique, Registry.Mobs], id: :mobs),
       supervisor(Registry, [:unique, Registry.Tick], id: :tick),
       worker(Dwarves.Spawn, [{:short_lifespan}], restart: :permanent),
