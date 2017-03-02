@@ -1,6 +1,7 @@
 defmodule World.Location do
   defstruct [
-    :id, :name, :description, :pathways, mobs: []
+    :id, :name, :description, :pathways, mobs: [],
+    controllers: []
   ]
   use GenServer
 
@@ -27,6 +28,14 @@ defmodule World.Location do
     GenServer.cast(via_tuple(location_id), {:track, mob_id})
   end
 
+  def add_observer(loc_id, observer_pid) do
+    GenServer.call(via_tuple(loc_id), {:add_observer, observer_pid})
+  end
+
+  def remove_observer(loc_id, observer_pid) do
+    GenServer.call(via_tuple(loc_id), {:remove_observer, observer_pid})
+  end
+
   def move(current_location, mob_id, new_location) do
     GenServer.cast(via_tuple(current_location), {:move, mob_id, new_location})
   end
@@ -39,15 +48,22 @@ defmodule World.Location do
     GenServer.call(via_tuple(new_location), {:arrive, mob_id})
   end
 
+  def handle_call({:add_observer, observer_pid}, _from, state) do
+    {:reply, :ok, %{state | controllers: [ observer_pid | state.controllers ]}}
+  end
+
+  def handle_call({:remove_observer, observer_pid}, _from, state) do
+    {:reply, :ok, %{state | controllers: List.delete(state.controllers, observer_pid)}}
+  end
+
+
   def handle_cast({:monitor_pathway, pathway_pid}, state) do
     Process.link(pathway_pid)
     {:noreply, state}
   end
 
   def handle_cast({:track, mob_id}, state) do
-    new_state = %{state |
-              mobs: state.mobs ++ [mob_id]
-             }
+    new_state = %{state | mobs: state.mobs ++ [mob_id]}
     {:noreply, new_state}
   end
 
@@ -62,6 +78,10 @@ defmodule World.Location do
   end
 
   def handle_call({:depart, mob_id}, _from, state) do
+    Enum.each(state.controllers,
+      fn(controller_pid) ->
+        Controller.handle(controller_pid, {:depart, state.id, mob_id})
+      end)
     {:reply,
      :ok,
      %{state | mobs: state.mobs -- [mob_id]}}
