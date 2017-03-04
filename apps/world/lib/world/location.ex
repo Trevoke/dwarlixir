@@ -1,7 +1,6 @@
 defmodule World.Location do
   defstruct [
-    :id, :name, :description, :pathways, mobs: [],
-    controllers: []
+    :id, :name, :description, :pathways, mobs: []
   ]
   use GenServer
 
@@ -15,10 +14,7 @@ defmodule World.Location do
     {:via, Registry, {LocationRegistry, id}}
   end
 
-  def init(%__MODULE__{
-        pathways: pathways,
-        id: id
-           } = state) do
+  def init(%__MODULE__{pathways: pathways, id: id} = state) do
     launch_known_pathways(id, pathways)
     check_for_other_pathways_to_monitor(id)
     {:ok, state}
@@ -26,14 +22,6 @@ defmodule World.Location do
 
   def track(location_id, mob_id) do
     GenServer.cast(via_tuple(location_id), {:track, mob_id})
-  end
-
-  def add_observer(loc_id, observer_pid) do
-    GenServer.call(via_tuple(loc_id), {:add_observer, observer_pid})
-  end
-
-  def remove_observer(loc_id, observer_pid) do
-    GenServer.call(via_tuple(loc_id), {:remove_observer, observer_pid})
   end
 
   def move(current_location, mob_id, new_location) do
@@ -47,15 +35,6 @@ defmodule World.Location do
   def arrive(new_location, mob_id) do
     GenServer.call(via_tuple(new_location), {:arrive, mob_id})
   end
-
-  def handle_call({:add_observer, observer_pid}, _from, state) do
-    {:reply, :ok, %{state | controllers: [ observer_pid | state.controllers ]}}
-  end
-
-  def handle_call({:remove_observer, observer_pid}, _from, state) do
-    {:reply, :ok, %{state | controllers: List.delete(state.controllers, observer_pid)}}
-  end
-
 
   def handle_cast({:monitor_pathway, pathway_pid}, state) do
     Process.link(pathway_pid)
@@ -78,21 +57,12 @@ defmodule World.Location do
   end
 
   def handle_call({:depart, mob_id}, _from, state) do
-    Enum.each(state.controllers,
-      fn(controller_pid) ->
-        Controller.handle(controller_pid, {:depart, state.id, mob_id})
-      end)
-    {:reply,
-     :ok,
-     %{state | mobs: state.mobs -- [mob_id]}}
+    {:reply, :ok, %{state | mobs: state.mobs -- [mob_id]}}
   end
 
   def handle_call({:arrive, mob_id}, _from, state) do
-    {:reply,
-     :ok,
-     %{state | mobs: state.mobs ++ [mob_id] }}
+    {:reply, :ok, %{state | mobs: state.mobs ++ [mob_id] }}
   end
-
 
   defp launch_known_pathways(id, pathways) do
     for %{from_id: from_id, name: name} <- pathways do
