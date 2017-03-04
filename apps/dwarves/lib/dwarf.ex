@@ -28,32 +28,27 @@ defmodule Dwarf do
   def handle_cast(:tick, %Dwarf{lifespan: 0} = state), do: {:noreply, state}
   def handle_cast(:tick, %Dwarf{name: name, lifespan: 1} = state) do
     IO.puts "#{name} has died, this should be an event"
-    {:noreply, %{state | lifespan: 0}}
+    {:noreply, %Dwarf{state | lifespan: 0}}
   end
 
-  def handle_cast(:tick, %Dwarf{
-        id: id,
-        name: name,
-        location_id: location_id,
-        lifespan: lifespan
-                  } = state) do
+  def handle_cast(:tick, %Dwarf{lifespan: lifespan} = state) do
 
-    new_location = new_location(location_id)
-    move_to(new_location, state)
+    new_state = case Enum.random(1..100) do
+                  x when x < 90 -> move_to_random_location(state)
+                  _ -> try_to_flirt(state)
+                end
 
-    {:noreply,
-     %{state | location_id: new_location, lifespan: lifespan - 1}
-    }
+    {:noreply, %Dwarf{new_state | lifespan: lifespan - 1}}
   end
 
-  defp move_to(new_location_id, state) do
-    World.Location.move(state.location_id, state.id, new_location_id)
+  defp move_to_random_location(state) do
+    new_loc = Enum.random World.Pathway.exits(state.location_id)
+    World.Location.move(state.location_id, state.id, new_loc)
+    %Dwarf{state | location_id: new_loc}
   end
 
-  defp new_location(location) do
-    World.Pathway.exits(location)
-    |> Enum.shuffle
-    |> List.first
+  defp try_to_flirt(state) do
+    state
   end
 
 end

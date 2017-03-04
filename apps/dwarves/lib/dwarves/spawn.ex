@@ -7,10 +7,8 @@ defmodule Dwarves.Spawn do
 
   def init(args) do
     Enum.each((1..40), fn id ->
-      initial_loc =
-        ["1", "2", "3"]
-        |> Enum.shuffle
-        |> List.first
+      initial_loc = Enum.random ["1", "2", "3"]
+      gender = Enum.random([:male, :female])
       birth(id, initial_loc, lifespan: args)
     end)
     {:ok, nil}
@@ -28,15 +26,10 @@ defmodule Dwarves.Spawn do
   defp birth(id, location_id, lifespan: lifespan_type) do
     lifespan = random_lifespan(lifespan_type)
     {:ok, _} = Dwarf.start_link(
-      %Dwarf{
-        id: id,
-        location_id: location_id,
-        name: Faker.Name.name,
-        lifespan: lifespan
-      })
+      %Dwarf{id: id, location_id: location_id,
+             name: Faker.Name.name, lifespan: lifespan})
   end
 
-
-  defp random_lifespan({:short_lifespan}), do: 180 + :rand.uniform(720)
-  defp random_lifespan(_args), do: 1800 + :rand.uniform(7200)
+  defp random_lifespan({:short_lifespan}), do: 180 + Enum.random(1..720)
+  defp random_lifespan(_args), do: 1800 + Enum.random(1..7200)
 end
