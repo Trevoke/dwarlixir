@@ -36,20 +36,23 @@ defmodule Dwarf do
   def handle_cast(:tick, %Dwarf{lifespan: 0} = state), do: {:noreply, state}
   def handle_cast(:tick, %Dwarf{name: name, lifespan: 1} = state) do
     IO.puts "#{name} has died, this should be an event"
+    # TODO create a corpse and kill this process
+    # Question: to whom do I link the corpse?
     {:noreply, %Dwarf{state | lifespan: 0}}
   end
 
   def handle_cast(:tick, %Dwarf{lifespan: lifespan, pregnant: true} = state) do
     Dwarves.Spawn.birth(location: state.location_id)
-    IO.puts "#{state.name} has just given birth!"
+    #IO.puts "#{state.name} has just given birth!"
     {:noreply, %Dwarf{state | lifespan: lifespan - 1, pregnant: false}}
   end
 
   def handle_cast(:tick, %Dwarf{lifespan: lifespan} = state) do
 
-    new_state = case Enum.random(1..100) do
-                  x when x < 90 -> move_to_random_location(state)
+    new_state = case Enum.random(1..1000) do
+                  x when x < 990 -> move_to_random_location(state)
                   _ -> try_to_mate(state)
+                  #_ -> state
                 end
 
     {:noreply, %Dwarf{new_state | lifespan: lifespan - 1}}
