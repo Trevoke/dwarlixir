@@ -8,26 +8,34 @@ defmodule Dwarves.Spawn do
   def init(args) do
     Enum.each((1..40), fn id ->
       initial_loc = Enum.random ["1", "2", "3"]
-      gender = Enum.random([:male, :female])
-      birth(id, initial_loc, lifespan: args)
+      give_birth(location: initial_loc, lifespan_type: args, id: id)
     end)
-    {:ok, nil}
+    {:ok, %{lifespan_type: args, next_id: 41}}
   end
 
-  def handle_cast({:birth, %{id: id, location: location, lifespan: lifespan_type}}, state) do
-    birth(id, location, lifespan: lifespan_type)
-    {:noreply, state}
+  def birth(location: location_id) do
+    GenServer.cast(:dwarves_spawn, {:birth, location_id})
   end
 
-  def handle_info(_msg, state) do
-    {:noreply, state}
+  def handle_cast({:birth, location_id}, state) do
+    give_birth(location: location_id, lifespan_type: state.lifespan_type, id: state.next_id)
+    {:noreply, %{state | next_id: state.next_id + 1}}
   end
 
-  defp birth(id, location_id, lifespan: lifespan_type) do
+  # def handle_cast({:birth, %{id: id, location: location, lifespan: lifespan_type}}, state) do
+  #   birth(id, location, lifespan: lifespan_type)
+  #   {:noreply, state}
+  # end
+
+  defp give_birth(location: location_id, lifespan_type: lifespan_type, id: id) do
+    gender = Enum.random([:male, :female])
     lifespan = random_lifespan(lifespan_type)
     {:ok, _} = Dwarf.start_link(
-      %Dwarf{id: id, location_id: location_id,
-             name: Faker.Name.name, lifespan: lifespan})
+      %Dwarf{id: id,
+             location_id: location_id,
+             gender: gender,
+             name: Faker.Name.name,
+             lifespan: lifespan})
   end
 
   defp random_lifespan({:short_lifespan}), do: 180 + Enum.random(1..720)

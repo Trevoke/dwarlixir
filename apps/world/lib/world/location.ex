@@ -1,10 +1,10 @@
 defmodule World.Location do
   defstruct [
-    :id, :name, :description, :pathways, mobs: []
+    :id, :name, :description, :pathways, mobs: %{}
   ]
   use GenServer
 
-  alias World.{LocationRegistry, Pathway, PathwayRegistry}
+  alias World.{Location, LocationRegistry, Pathway, PathwayRegistry}
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(args.id))
@@ -20,20 +20,20 @@ defmodule World.Location do
     {:ok, state}
   end
 
-  def track(location_id, mob_id) do
-    GenServer.cast(via_tuple(location_id), {:track, mob_id})
-  end
-
-  def move(current_location, mob_id, new_location) do
-    GenServer.cast(via_tuple(current_location), {:move, mob_id, new_location})
+  def move(current_location, mob_id, new_location, public_info) do
+    GenServer.cast(via_tuple(current_location), {:move, mob_id, new_location, public_info})
   end
 
   def depart(current_location, mob_id) do
     GenServer.call(via_tuple(current_location), {:depart, mob_id})
   end
 
-  def arrive(new_location, mob_id) do
-    GenServer.call(via_tuple(new_location), {:arrive, mob_id})
+  def arrive(new_location, mob_id, public_info) do
+    GenServer.call(via_tuple(new_location), {:arrive, mob_id, public_info})
+  end
+
+  def mobs(loc_id, filter) do
+    GenServer.call(via_tuple(loc_id), {:mobs, filter})
   end
 
   def handle_cast({:monitor_pathway, pathway_pid}, state) do
@@ -41,15 +41,10 @@ defmodule World.Location do
     {:noreply, state}
   end
 
-  def handle_cast({:track, mob_id}, state) do
-    new_state = %{state | mobs: state.mobs ++ [mob_id]}
-    {:noreply, new_state}
-  end
-
-  def handle_cast({:move, mob_id, new_location}, state) do
+  def handle_cast({:move, mob_id, new_location, public_info}, state) do
     pathway_tuple = {state.id, new_location}
-    if Enum.member?(state.mobs, mob_id) do
-      Pathway.move(pathway_tuple, mob_id)
+    if Enum.member?(Map.keys(state.mobs), mob_id) do
+      Pathway.move(pathway_tuple, mob_id, public_info)
     else
       IO.puts "#{state.id} does not have #{mob_id}"
     end
@@ -57,11 +52,16 @@ defmodule World.Location do
   end
 
   def handle_call({:depart, mob_id}, _from, state) do
-    {:reply, :ok, %{state | mobs: state.mobs -- [mob_id]}}
+    {:reply, :ok, %Location{state | mobs: Map.delete(state.mobs, mob_id)}}
   end
 
-  def handle_call({:arrive, mob_id}, _from, state) do
-    {:reply, :ok, %{state | mobs: state.mobs ++ [mob_id] }}
+  def handle_call({:arrive, mob_id, public_info}, _from, state) do
+    {:reply, :ok, %Location{state | mobs: Map.put(state.mobs, mob_id, public_info)}}
+  end
+
+  def handle_call({:mobs, filter}, _from, state) do
+    mobs = Enum.filter(state.mobs, filter)
+    {:reply, mobs, state}
   end
 
   defp launch_known_pathways(id, pathways) do

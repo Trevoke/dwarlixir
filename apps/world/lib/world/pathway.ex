@@ -25,8 +25,8 @@ defmodule World.Pathway do
     {:ok, state}
   end
 
-  def move({from, to}, mob_id) do
-    GenServer.cast(via_tuple(from, to), {:move, mob_id})
+  def move({from, to}, mob_id, public_info) do
+    GenServer.cast(via_tuple(from, to), {:move, mob_id, public_info})
   end
 
   def exits(location_id) do
@@ -36,9 +36,9 @@ defmodule World.Pathway do
     |> Enum.map(fn({_, id}) -> id end)
   end
 
-  def handle_cast({:move, mob_id}, state) do
+  def handle_cast({:move, mob_id, public_info}, state) do
     :ok = Location.depart(state.from_id, mob_id)
-    :ok = Location.arrive(state.to_id, mob_id)
+    :ok = Location.arrive(state.to_id, mob_id, public_info)
     {:noreply, state}
   end
 
