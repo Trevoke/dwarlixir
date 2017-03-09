@@ -41,18 +41,6 @@ defmodule World.Location do
     {:noreply, %Location{state | corpses: [pid | state.corpses]}}
   end
 
-  def corpses(loc_id) do
-    GenServer.cast(via_tuple(loc_id), :corpses)
-  end
-
-  def handle_cast(:corpses, state) do
-    IO.inspect state.corpses
-    # state.corpses
-    # #|> Enum.map(fn(x) -> elem(x, 1) end)
-    # |> Enum.each(fn(x) -> IO.puts "The corpse of #{x.name}" end)
-    {:noreply, state}
-  end
-
   def mobs(loc_id, filter) do
     GenServer.call(via_tuple(loc_id), {:mobs, filter})
   end

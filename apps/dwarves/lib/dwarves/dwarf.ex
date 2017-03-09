@@ -35,16 +35,14 @@ defmodule Dwarf do
 
   def handle_cast(:tick, %Dwarf{lifespan: 0} = state), do: {:noreply, state}
   def handle_cast(:tick, %Dwarf{name: name, lifespan: 1} = state) do
-    IO.puts "#{name} has died, this should be an event"
+    #TODO add event
     Life.Reaper.claim(state.id, state.location_id, public_info(state))
-    # TODO create a corpse and kill this process
-    # Question: to whom do I link the corpse?
     {:noreply, %Dwarf{state | lifespan: 0}}
   end
 
   def handle_cast(:tick, %Dwarf{lifespan: lifespan, pregnant: true} = state) do
     Dwarves.Spawn.birth(location: state.location_id)
-    #IO.puts "#{state.name} has just given birth!"
+    #TODO add event
     {:noreply, %Dwarf{state | lifespan: lifespan - 1, pregnant: false}}
   end
 

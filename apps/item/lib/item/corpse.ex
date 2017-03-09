@@ -8,7 +8,6 @@ defmodule Item.Corpse do
   defp via_tuple(id), do: {:via, Registry, {Registry.Items, id}}
 
   def init(state) do
-    IO.puts "Created a corpse"
     {:ok, Map.put(state, :lifespan, 100)}
   end
 end

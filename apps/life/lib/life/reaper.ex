@@ -14,12 +14,10 @@ defmodule Life.Reaper do
   end
 
   def handle_cast({:claim, mob_id, loc_id, public_info}, state) do
-    IO.puts "process-level reaping"
     corpse_id = UUID.uuid4(:hex)
     corpse_state = Map.put(public_info, :id, corpse_id)
     World.Location.depart(loc_id, mob_id)
     Dwarf.stop(mob_id)
-    IO.inspect corpse_state
     Item.Supervisor.create(:corpse, loc_id, corpse_state)
     {:noreply, state}
   end
