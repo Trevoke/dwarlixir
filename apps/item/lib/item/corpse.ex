@@ -8,6 +8,12 @@ defmodule Item.Corpse do
   defp via_tuple(id), do: {:via, Registry, {Registry.Items, id}}
 
   def init(state) do
+    Registry.register(Registry.Tick, :subject_to_time, nil)
     {:ok, Map.put(state, :lifespan, 100)}
+  end
+
+  def handle_cast(:tick, %{lifespan: 0} = state), do: {:noreply, state}
+  def handle_cast(:tick, %{lifespan: lifespan} = state) do
+    {:noreply, %{state | lifespan: lifespan - 1}}
   end
 end

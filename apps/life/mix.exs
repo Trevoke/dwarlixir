@@ -37,6 +37,8 @@ defmodule Life.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:petick, "~> 0.0.1"}
+    ]
   end
 end

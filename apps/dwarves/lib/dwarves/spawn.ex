@@ -6,7 +6,7 @@ defmodule Dwarves.Spawn do
   end
 
   def init(args) do
-    x = 300
+    x = 3000
     Enum.each((1..x), fn id ->
       initial_loc = Enum.random ["1", "2", "3"]
       give_birth(location: initial_loc, lifespan_type: args, id: id)

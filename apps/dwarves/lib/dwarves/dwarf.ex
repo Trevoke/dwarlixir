@@ -16,7 +16,7 @@ defmodule Dwarf do
 
   def init(%Dwarf{location_id: location_id} = state) do
     Location.arrive(location_id, state.id, public_info(state))
-
+    Registry.register(Registry.Tick, :subject_to_time, nil)
     {:ok, pid} = GenericMobController.start_link(%{id: state.id, timer_ref: nil})
     {:ok, %Dwarf{state | controller: pid}}
   end
@@ -99,6 +99,7 @@ defmodule Dwarf do
   end
 
   def stop(mob_id) do
+    # TODO stop the controller and other associated processes here
     GenServer.stop(via_mob(mob_id))
   end
 

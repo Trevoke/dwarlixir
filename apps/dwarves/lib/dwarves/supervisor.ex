@@ -8,10 +8,7 @@ defmodule Dwarves.Supervisor do
   def init(_args) do
     children = [
       supervisor(Registry, [:unique, Registry.Mobs], id: :mobs),
-      supervisor(Registry, [:unique, Registry.Tick], id: :tick),
-      worker(Dwarves.Spawn, [{:short_lifespan}], restart: :permanent),
-      #worker(Dwarves.Timers, [{:start_heartbeat}], restart: :permanent)
-#       worker(Dwarves.Timers, [[]], restart: :permanent)
+      worker(Dwarves.Spawn, [{:short_lifespan}], restart: :permanent)
     ]
 
     supervise(children, strategy: :one_for_one)

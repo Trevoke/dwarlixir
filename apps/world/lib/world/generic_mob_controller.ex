@@ -8,19 +8,11 @@ defmodule GenericMobController do
   end
 
   def init(state) do
-    {:ok, timer_ref} = :timer.send_interval(@tick, :tick)
-      #Petick.start(interval: @tick, callback: {GenericMobController, :tick})
-    #Registry.register(Registry.Tick, state.id, timer_pid)
-    {:ok, %{state | timer_ref: timer_ref}}
+    {:ok, state}
   end
 
-  # def tick(controller_pid) do
-  #   IO.puts "yes? #{inspect self()} #{inspect controller_pid}"
-
-  #   GenServer.cast(controller_pid, :tick)
-  # end
-
   def handle_info(:tick, state) do
+    # TODO more generic than "Dwarf" ?
     Dwarf.tick(state.id)
     {:noreply, state}
   end

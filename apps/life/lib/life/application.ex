@@ -10,9 +10,10 @@ defmodule Life.Application do
 
     # Define workers and child supervisors to be supervised
     children = [
-      worker(Life.Reaper, [], restart: :permanent)
-      # Starts a worker by calling: Life.Worker.start_link(arg1, arg2, arg3)
-      # worker(Life.Worker, [arg1, arg2, arg3]),
+      worker(Life.Reaper, [], restart: :permanent),
+      supervisor(Registry, [:duplicate, Registry.Tick], id: :tick),
+      worker(Life.Timers, [{:start_heartbeat}], restart: :permanent)
+      # worker(Life.Timers, [[]], restart: :permanent)
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
