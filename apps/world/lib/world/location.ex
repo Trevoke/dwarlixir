@@ -1,6 +1,7 @@
 defmodule World.Location do
   defstruct [
-    :id, :name, :description, :pathways, mobs: %{}
+    :id, :name, :description, :pathways, corpses: [],
+    mobs: %{}
   ]
   use GenServer
 
@@ -30,6 +31,26 @@ defmodule World.Location do
 
   def arrive(new_location, mob_id, public_info) do
     GenServer.call(via_tuple(new_location), {:arrive, mob_id, public_info})
+  end
+
+  def place(loc_id, pid) do
+    GenServer.cast(via_tuple(loc_id), {:place, pid})
+  end
+
+  def handle_cast({:place, pid}, state) do
+    {:noreply, %Location{state | corpses: [pid | state.corpses]}}
+  end
+
+  def corpses(loc_id) do
+    GenServer.cast(via_tuple(loc_id), :corpses)
+  end
+
+  def handle_cast(:corpses, state) do
+    IO.inspect state.corpses
+    # state.corpses
+    # #|> Enum.map(fn(x) -> elem(x, 1) end)
+    # |> Enum.each(fn(x) -> IO.puts "The corpse of #{x.name}" end)
+    {:noreply, state}
   end
 
   def mobs(loc_id, filter) do

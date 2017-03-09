@@ -9,7 +9,7 @@ defmodule Dwarf do
   alias World.{Location, Pathway}
 
   def start_link(args) do
-    GenServer.start_link(__MODULE__, args, name: via_mob(args.id))
+    GenServer.start_link(__MODULE__, args, name: via_mob(args.id), restart: :transient)
   end
 
   defp via_mob(id), do: {:via, Registry, {Registry.Mobs, id}}
@@ -36,6 +36,7 @@ defmodule Dwarf do
   def handle_cast(:tick, %Dwarf{lifespan: 0} = state), do: {:noreply, state}
   def handle_cast(:tick, %Dwarf{name: name, lifespan: 1} = state) do
     IO.puts "#{name} has died, this should be an event"
+    Life.Reaper.claim(state.id, state.location_id, public_info(state))
     # TODO create a corpse and kill this process
     # Question: to whom do I link the corpse?
     {:noreply, %Dwarf{state | lifespan: 0}}
@@ -91,6 +92,10 @@ defmodule Dwarf do
     end
 
     state
+  end
+
+  def stop(mob_id) do
+    GenServer.stop(via_mob(mob_id))
   end
 
   defp public_info(state) do

@@ -1,4 +1,5 @@
 %{"dialyxir": {:hex, :dialyxir, "0.4.4", "e93ff4affc5f9e78b70dc7bec7b07da44ae1ed3fef38e7113568dd30ad7b01d3", [:mix], []},
   "ex2ms": {:hex, :ex2ms, "1.4.0", "e43b410888b45ba363ea6650db3736db3e455a0a412ec244ac633fede857bcb2", [:mix], []},
   "faker": {:hex, :faker, "0.7.0", "2c42deeac7be717173c78c77fb3edc749fb5d5e460e33d01fe592ae99acc2f0d", [:mix], []},
-  "petick": {:hex, :petick, "0.0.1", "f29856643ba55f3fdb8b79ba672b85b9256780a9f4a85e545d9221efbe8f423b", [:mix], []}}
+  "petick": {:hex, :petick, "0.0.1", "f29856643ba55f3fdb8b79ba672b85b9256780a9f4a85e545d9221efbe8f423b", [:mix], []},
+  "uuid": {:hex, :uuid, "1.1.6", "4927232f244e69c6e255643014c2d639dad5b8313dc2a6976ee1c3724e6ca60d", [:mix], []}}

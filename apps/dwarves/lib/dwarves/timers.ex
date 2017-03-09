@@ -5,10 +5,7 @@ defmodule Dwarves.Timers do
     GenServer.start_link(__MODULE__, opts, name: :dwarves_timers)
   end
 
-  def init({:start_heartbeat}) do
-    {:ok, %{heartbeat: heartbeat_timer()}}
-  end
-
+  def init({:start_heartbeat}), do: {:ok, %{heartbeat: heartbeat_timer()}}
   def init(_args), do: {:ok, %{}}
 
   def start_heartbeat do
@@ -37,7 +34,7 @@ defmodule Dwarves.Timers do
   end
 
   def send_heartbeat(_calling_pid) do
-    Registry.dispatch(Registry.Mobs, :subject_to_time, fn entries ->
+    Registry.dispatch(Registry.Tick, :subject_to_time, fn entries ->
       for {pid, _} <- entries, do: GenServer.cast(pid, {:tick})
     end)
   end

@@ -38,6 +38,6 @@ defmodule Dwarves.Spawn do
              lifespan: lifespan})
   end
 
-  defp random_lifespan({:short_lifespan}), do: 180 + Enum.random(1..120)
+  defp random_lifespan({:short_lifespan}), do: 30 + Enum.random(1..20)
   defp random_lifespan(_args), do: 1800 + Enum.random(1..7200)
 end

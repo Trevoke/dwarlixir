@@ -1,8 +1,8 @@
-defmodule Item.Mixfile do
+defmodule Life.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :item,
+    [app: :life,
      version: "0.1.0",
      build_path: "../../_build",
      config_path: "../../config/config.exs",
@@ -20,7 +20,7 @@ defmodule Item.Mixfile do
   def application do
     # Specify extra applications you'll use from Erlang/Elixir
     [extra_applications: [:logger],
-     mod: {Item.Application, []}]
+     mod: {Life.Application, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -37,8 +37,6 @@ defmodule Item.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    [
-      { :uuid, "~> 1.1" }
-    ]
+    []
   end
 end
