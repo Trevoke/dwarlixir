@@ -77,19 +77,25 @@ defmodule Dwarf do
                     :female -> :male
                   end
 
-    partner =
+    possible_partners =
       Location.mobs(
         state.location_id,
         fn({_, info}) -> info.gender == looking_for end
       )
-      |> Enum.random
 
-    cond do
-      state.gender == :male && elem(partner, 1).gender == :female -> Dwarf.pregnantize(elem(partner, 0))
-      state.gender == :female && elem(partner, 1).gender == :male -> Dwarf.pregnantize(state.id)
+    if Enum.empty? possible_partners do
+      state
+    else
+
+      partner = Enum.random possible_partners
+
+      case [state.gender, elem(partner, 1).gender] do
+        [:male, :female] -> Dwarf.pregnantize(elem(partner, 0))
+        [:female, :male] ->  Dwarf.pregnantize(state.id)
+      end
+
+      state
     end
-
-    state
   end
 
   def stop(mob_id) do
