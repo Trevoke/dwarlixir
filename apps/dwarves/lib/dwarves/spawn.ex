@@ -6,11 +6,12 @@ defmodule Dwarves.Spawn do
   end
 
   def init(args) do
-    Enum.each((1..40), fn id ->
+    x = 300
+    Enum.each((1..x), fn id ->
       initial_loc = Enum.random ["1", "2", "3"]
       give_birth(location: initial_loc, lifespan_type: args, id: id)
     end)
-    {:ok, %{lifespan_type: args, next_id: 41}}
+    {:ok, %{lifespan_type: args, next_id: x + 1}}
   end
 
   def birth(location: location_id) do
