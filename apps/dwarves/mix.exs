@@ -34,8 +34,9 @@ defmodule Dwarves.Mixfile do
   defp deps do
     [
       {:faker, "~> 0.7.0"},
+      {:world, in_umbrella: true},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
-      {:world, in_umbrella: true}
+      {:credo, "~> 0.6.1"}
     ]
   end
 end
