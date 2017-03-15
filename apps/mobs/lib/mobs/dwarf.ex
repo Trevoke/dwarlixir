@@ -1,4 +1,4 @@
-defmodule Dwarf do
+defmodule Mobs.Dwarf do
   defstruct [
     :id, :location_id, :lifespan,
     :gender, :controller, :pregnant,
@@ -7,6 +7,7 @@ defmodule Dwarf do
   use GenServer
 
   alias World.{Location, Pathway}
+  alias Mobs.Dwarf
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_mob(args.id), restart: :transient)
@@ -41,7 +42,7 @@ defmodule Dwarf do
   end
 
   def handle_cast(:tick, %Dwarf{lifespan: lifespan, pregnant: true} = state) do
-    Dwarves.Spawn.birth(location: state.location_id)
+    Mobs.Spawn.birth(location: state.location_id)
     #TODO add event
     {:noreply, %Dwarf{state | lifespan: lifespan - 1, pregnant: false}}
   end

@@ -1,8 +1,10 @@
-defmodule Dwarves.Spawn do
+defmodule Mobs.Spawn do
   use GenServer
 
+  alias Mobs.Dwarf
+
   def start_link(args \\ []) do
-    GenServer.start_link(__MODULE__, args, name: :dwarves_spawn)
+    GenServer.start_link(__MODULE__, args, name: :mobs_spawn)
   end
 
   def init(args) do
@@ -15,7 +17,7 @@ defmodule Dwarves.Spawn do
   end
 
   def birth(location: location_id) do
-    GenServer.cast(:dwarves_spawn, {:birth, location_id})
+    GenServer.cast(:mobs_spawn, {:birth, location_id})
   end
 
   def handle_cast({:birth, location_id}, state) do

@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :dwarves, key: :value
+#     config :mobs, key: :value
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:dwarves, :key)
+#     Application.get_env(:mobs, :key)
 #
 # Or configure a 3rd-party app:
 #

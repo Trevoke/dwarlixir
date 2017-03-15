@@ -1,3 +1,3 @@
-# Dwarves
+# Mobs
 
 A dwarf-fortress-inspired codebase

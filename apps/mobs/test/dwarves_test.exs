@@ -1,6 +1,6 @@
-defmodule DwarvesTest do
+defmodule MobsTest do
   use ExUnit.Case
-  doctest Dwarves
+  doctest Mobs
 
   test "the truth" do
     assert 1 + 1 == 2

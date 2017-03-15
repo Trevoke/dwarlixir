@@ -1,8 +1,8 @@
-defmodule Dwarves do
+defmodule Mobs do
   use Application
 
   def start(_type, _args) do
-    Dwarves.Supervisor.start_link()
+    Mobs.Supervisor.start_link()
   end
 
 end
