@@ -16,7 +16,7 @@ defmodule Life.Reaper do
   def handle_cast({:claim, mob_id, loc_id, public_info}, state) do
     corpse_id = UUID.uuid4(:hex)
     corpse_state = Map.put(public_info, :id, corpse_id)
-    World.Location.depart(loc_id, mob_id)
+    World.Location.depart(loc_id, mob_id, "to a better place")
     Mobs.Dwarf.stop(mob_id)
     Item.Supervisor.create(:corpse, loc_id, corpse_state)
     {:noreply, state}

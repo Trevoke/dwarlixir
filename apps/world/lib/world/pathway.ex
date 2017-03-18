@@ -36,9 +36,17 @@ defmodule World.Pathway do
     |> Enum.map(fn({_, id}) -> id end)
   end
 
-  def handle_cast({:move, mob_id, public_info}, state) do
-    :ok = Location.depart(state.from_id, mob_id)
-    :ok = Location.arrive(state.to_id, mob_id, public_info)
+  def handle_cast(
+    {:move, mob_id, public_info},
+    %__MODULE__{from_id: from_id, to_id: to_id, name: exit_name} = state
+  ) do
+    opposite_path = Registry.lookup(PathwayRegistry, {from_id, to_id})
+    incoming_name = case length(opposite_path) do
+                      1 -> elem(List.first(opposite_path), 1)
+                      _ -> "seemingly nowhere"
+                    end
+    :ok = Location.depart(from_id, mob_id, exit_name)
+    :ok = Location.arrive(to_id, mob_id, public_info, incoming_name)
     {:noreply, state}
   end
 

@@ -1,7 +1,7 @@
 defmodule World.Location do
   defstruct [
     :id, :name, :description, :pathways, corpses: [],
-    mobs: %{}
+    mobs: %{}, message_recipients: []
   ]
   use GenServer
 
@@ -25,24 +25,24 @@ defmodule World.Location do
     GenServer.cast(via_tuple(current_location), {:move, mob_id, new_location, public_info})
   end
 
-  def depart(current_location, mob_id) do
-    GenServer.call(via_tuple(current_location), {:depart, mob_id})
+  def depart(current_location, mob_id, towards) do
+    GenServer.call(via_tuple(current_location), {:depart, mob_id, towards})
   end
 
-  def arrive(new_location, mob_id, public_info) do
-    GenServer.call(via_tuple(new_location), {:arrive, mob_id, public_info})
+  def arrive(new_location, mob_id, public_info, from) do
+    GenServer.call(via_tuple(new_location), {:arrive, mob_id, public_info, from})
   end
 
-  def place(loc_id, pid) do
-    GenServer.cast(via_tuple(loc_id), {:place, pid})
-  end
-
-  def handle_cast({:place, pid}, state) do
-    {:noreply, %Location{state | corpses: [pid | state.corpses]}}
+  def place(loc_id, mob_id) do
+    GenServer.cast(via_tuple(loc_id), {:place, mob_id})
   end
 
   def mobs(loc_id, filter) do
     GenServer.call(via_tuple(loc_id), {:mobs, filter})
+  end
+
+  def handle_cast({:place, pid}, state) do
+    {:noreply, %Location{state | corpses: [pid | state.corpses]}}
   end
 
   def handle_cast({:monitor_pathway, pathway_pid}, state) do
@@ -50,21 +50,21 @@ defmodule World.Location do
     {:noreply, state}
   end
 
-  def handle_cast({:move, mob_id, new_location, public_info}, state) do
+  def handle_cast({:move, mob_id, new_location, mob_public_info}, state) do
     pathway_tuple = {state.id, new_location}
     if Enum.member?(Map.keys(state.mobs), mob_id) do
-      Pathway.move(pathway_tuple, mob_id, public_info)
+      Pathway.move(pathway_tuple, mob_id, mob_public_info)
     else
       IO.puts "#{state.id} does not have #{mob_id}"
     end
     {:noreply, state}
   end
 
-  def handle_call({:depart, mob_id}, _from, state) do
+  def handle_call({:depart, mob_id, to}, _from, state) do
     {:reply, :ok, %Location{state | mobs: Map.delete(state.mobs, mob_id)}}
   end
 
-  def handle_call({:arrive, mob_id, public_info}, _from, state) do
+  def handle_call({:arrive, mob_id, public_info, from}, _from, state) do
     {:reply, :ok, %Location{state | mobs: Map.put(state.mobs, mob_id, public_info)}}
   end
 

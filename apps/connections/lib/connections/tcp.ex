@@ -14,25 +14,34 @@ defmodule Connections.Tcp do
 
   defp loop_acceptor(socket) do
     {:ok, client} = :gen_tcp.accept(socket)
-    {:ok, pid} = Task.Supervisor.start_child(Connections.TaskSupervisor, fn -> serve(client) end)
+    {:ok, pid} = Task.Supervisor.start_child(
+      Connections.TaskSupervisor,
+      fn -> serve(client) end)
     :ok = :gen_tcp.controlling_process(client, pid)
     loop_acceptor(socket)
   end
 
   defp serve(socket) do
-    socket
-    |> read_line()
-    |> write_line(socket)
-
-    serve(socket)
+    # TODO eventually actually log in, yeah?
+    case HumanController.log_in("user1", "password", socket) do
+      {:ok, user_id} -> loop_connection(socket, user_id)
+      {:error, error} -> write_line(socket, error)
+    end
+    # TODO disconnect on bad login
+    # TODO graceful exit
+    # TODO graceful error handling?
   end
 
-  defp read_line(socket) do
-    {:ok, data} = :gen_tcp.recv(socket, 0)
-    data
+  def loop_connection(socket, user_id) do
+    case :gen_tcp.recv(socket, 0) do
+      {:ok, input} ->
+        HumanController.handle(user_id, {:input, input})
+        loop_connection(socket, user_id)
+      {:error, :closed} -> IO.puts "Connection closed"
+    end
   end
 
-  defp write_line(line, socket) do
+    defp write_line(socket, line) do
     :gen_tcp.send(socket, line)
   end
 

@@ -11,9 +11,9 @@ defmodule GenericMobController do
     {:ok, state}
   end
 
-  def handle_info(:tick, state) do
-    # TODO more generic than "Dwarf" ?
-    Mobs.Dwarf.tick(state.id)
-    {:noreply, state}
-  end
+  # def handle_info(:tick, state) do
+  #   # TODO more generic than "Dwarf" ?
+  #   Mobs.Dwarf.tick(state.id)
+  #   {:noreply, state}
+  # end
 end

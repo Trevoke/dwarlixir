@@ -17,20 +17,18 @@ defmodule World do
 
   defp map_data do
     [
-      location("1", "center", "The center of the universe",
+      location("1", "The Broken Drum", "A tired bar that has seen too many fights",
         [
-          pathway("2", "brightness"),
-          pathway("3", "darkness"),
+          partial_pathway("2", "upstairs"),
+          partial_pathway("3", "out"),
         ]),
-      location("2", "soft", "A room with a soft light",
+      location("2", "A quiet room", "This room is above the main room of the Broken Drum, and surprisingly all the noise dies down up here",
         [
-          pathway("1","center"),
-          pathway("3", "darkness (x)"),
+          partial_pathway("1","down"),
         ]),
-      location("3", "dark", "Darkness.",
+      location("3", "outside", "This is the street outside the Broken Drum",
         [
-          pathway("1", "center"),
-          pathway("2", "brightness")
+          partial_pathway("1", "drum"),
         ])
     ]
   end
@@ -44,7 +42,7 @@ defmodule World do
     }
   end
 
-  defp pathway(from_id, name) do
+  defp partial_pathway(from_id, name) do
     %{from_id: from_id, name: name}
   end
 end
