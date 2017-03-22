@@ -24,7 +24,9 @@ defmodule Connections.Tcp do
   defp serve(socket) do
     # TODO eventually actually log in, yeah?
     case HumanController.log_in("user1", "password", socket) do
-      {:ok, user_id} -> loop_connection(socket, user_id)
+      {:ok, user_id} ->
+        HumanController.join_room(user_id, "1")
+        loop_connection(socket, user_id)
       {:error, error} -> write_line(socket, error)
     end
     # TODO disconnect on bad login

@@ -1,7 +1,7 @@
 defmodule World.Location do
   defstruct [
     :id, :name, :description, :pathways, corpses: [],
-    mobs: %{}, message_recipients: []
+    entities: %{}
   ]
   use GenServer
 
@@ -29,8 +29,8 @@ defmodule World.Location do
     GenServer.call(via_tuple(current_location), {:depart, mob_id, towards})
   end
 
-  def arrive(new_location, mob_id, public_info, from) do
-    GenServer.call(via_tuple(new_location), {:arrive, mob_id, public_info, from})
+  def arrive(new_location, {{module, id}, public_info}, from) do
+    GenServer.call(via_tuple(new_location), {:arrive, {{module, id}, public_info}, from})
   end
 
   def place(loc_id, mob_id) do
@@ -52,7 +52,7 @@ defmodule World.Location do
 
   def handle_cast({:move, mob_id, new_location, mob_public_info}, state) do
     pathway_tuple = {state.id, new_location}
-    if Enum.member?(Map.keys(state.mobs), mob_id) do
+    if Enum.member?(Map.keys(state.entities), mob_id) do
       Pathway.move(pathway_tuple, mob_id, mob_public_info)
     else
       IO.puts "#{state.id} does not have #{mob_id}"
@@ -61,15 +61,19 @@ defmodule World.Location do
   end
 
   def handle_call({:depart, mob_id, to}, _from, state) do
-    {:reply, :ok, %Location{state | mobs: Map.delete(state.mobs, mob_id)}}
+    {:reply, :ok, %Location{state | entities: Map.delete(state.entities, mob_id)}}
   end
 
-  def handle_call({:arrive, mob_id, public_info, from}, _from, state) do
-    {:reply, :ok, %Location{state | mobs: Map.put(state.mobs, mob_id, public_info)}}
+  def handle_call({:arrive, {mob_id, public_info}, from_loc}, _from, state) do
+    state.entities
+    |> Map.keys
+    |> Enum.each(fn({module, id}) ->
+      Kernel.apply(module, :handle, [id, {:arrive, public_info, from_loc}]) end)
+    {:reply, :ok, %Location{state | entities: Map.put(state.entities, mob_id, public_info)}}
   end
 
   def handle_call({:mobs, filter}, _from, state) do
-    mobs = Enum.filter(state.mobs, filter)
+    mobs = Enum.filter(state.entities, filter)
     {:reply, mobs, state}
   end
 

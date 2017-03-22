@@ -17,8 +17,7 @@ defmodule Mobs.Dwarf do
 
   def init(%Dwarf{location_id: location_id} = state) do
     {:ok, pid} = GenericMobController.start_link(%{id: state.id, timer_ref: nil})
-    Location.arrive(location_id, state.id, public_info(state), "seemingly nowhere")
-    Registry.register(Registry.Tick, :subject_to_time, nil)
+    Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state)}, "seemingly nowhere")
     {:ok, %Dwarf{state | controller: pid}}
   end
 
@@ -28,6 +27,14 @@ defmodule Mobs.Dwarf do
 
   def gender(mob_id) do
     GenServer.call(via_mob(mob_id), :gender)
+  end
+
+  def handle(id, message) do
+    GenServer.cast(via_mob(id), message)
+  end
+
+  def handle_cast({:arrive, info, from_loc}, state) do
+    {:noreply, state}
   end
 
   # This has made so many people laugh that I can't rename it.

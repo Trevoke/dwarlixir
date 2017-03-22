@@ -46,7 +46,7 @@ defmodule World.Pathway do
                       _ -> "seemingly nowhere"
                     end
     :ok = Location.depart(from_id, mob_id, exit_name)
-    :ok = Location.arrive(to_id, mob_id, public_info, incoming_name)
+    :ok = Location.arrive(to_id, {mob_id, public_info}, incoming_name)
     {:noreply, state}
   end
 
