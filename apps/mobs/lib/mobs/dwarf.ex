@@ -17,7 +17,7 @@ defmodule Mobs.Dwarf do
 
   def init(%Dwarf{location_id: location_id} = state) do
     {:ok, pid} = GenericMobController.start_link(%{id: state.id, timer_ref: nil})
-    Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state)}, {"seemingly nowhere", nil})
+    Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state)}, "seemingly nowhere")
     {:ok, %Dwarf{state | controller: pid}}
   end
 
