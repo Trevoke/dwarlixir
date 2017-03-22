@@ -38,7 +38,7 @@ defmodule HumanController do
 
   def handle_cast({:arrive, info, from_loc}, state) do
     write_line(state.socket,
-      "#{info.name} arrived from #{from_loc}.")
+      "#{info.name} arrived from #{from_loc}.\n")
     {:noreply, state}
   end
 
