@@ -7,7 +7,7 @@ defmodule World.Pathway do
                        to_id: String.t,
                        name: String.t }
   use GenServer
-  alias World.{Location, LocationRegistry, PathwayRegistry}
+  alias World.{Location, PathwayRegistry}
 
   def start_link(state) do
     GenServer.start_link(__MODULE__, state, name: via_tuple(state.from_id, state.to_id))
@@ -25,19 +25,19 @@ defmodule World.Pathway do
     {:ok, state}
   end
 
-  def move({from, to}, mob_id, public_info) do
-    GenServer.cast(via_tuple(from, to), {:move, mob_id, public_info})
+  def move({from, to}, {module, mob_id}, public_info) do
+    GenServer.cast(via_tuple(from, to), {:move, {module, mob_id}, public_info})
   end
 
   def exits(location_id) do
     PathwayRegistry
     |> Registry.match({location_id, :_}, :_)
-    |> Enum.map(fn({pid, tuple}) -> tuple end)
-    |> Enum.map(fn({_, id}) -> id end)
+    |> Enum.map(fn({_pid, tuple}) -> tuple end)
+    |> Enum.map(fn({_from, id}) -> id end)
   end
 
   def handle_cast(
-    {:move, mob_id, public_info},
+    {:move, {module, mob_id}, public_info},
     %__MODULE__{from_id: from_id, to_id: to_id, name: exit_name} = state
   ) do
     opposite_path = Registry.lookup(PathwayRegistry, {from_id, to_id})
@@ -45,8 +45,8 @@ defmodule World.Pathway do
                       1 -> elem(List.first(opposite_path), 1)
                       _ -> "seemingly nowhere"
                     end
-    :ok = Location.depart(from_id, mob_id, exit_name)
-    :ok = Location.arrive(to_id, {mob_id, public_info}, incoming_name)
+    :ok = Location.depart(from_id, {module, mob_id}, exit_name)
+    :ok = Location.arrive(to_id, {{module, mob_id}, public_info}, incoming_name)
     {:noreply, state}
   end
 

@@ -33,14 +33,15 @@ defmodule Mobs.Dwarf do
     GenServer.cast(via_mob(id), message)
   end
 
-  def handle_cast({:arrive, info, from_loc}, state) do
-    {:noreply, state}
-  end
-
   # This has made so many people laugh that I can't rename it.
   def pregnantize(mob_id) do
     GenServer.cast(via_mob(mob_id), :pregnantize)
   end
+
+  def handle_cast({:arrive, info, from_loc}, state) do
+    {:noreply, state}
+  end
+
 
   def handle_cast(:tick, %Dwarf{lifespan: 0} = state), do: {:noreply, state}
   def handle_cast(:tick, %Dwarf{name: name, lifespan: 1} = state) do
@@ -76,7 +77,7 @@ defmodule Mobs.Dwarf do
 
   defp move_to_random_location(%Dwarf{location_id: loc_id, id: id} = state) do
     new_loc = Enum.random Pathway.exits(loc_id)
-    Location.move(loc_id, id, new_loc, public_info(state))
+    Location.move(loc_id, {Dwarf, id}, new_loc, public_info(state))
     %Dwarf{state | location_id: new_loc}
   end
 
