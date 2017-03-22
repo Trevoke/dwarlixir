@@ -13,6 +13,7 @@ defmodule GenericMobController do
   end
 
   def handle_cast(:tick, state) do
+    Mobs.Dwarf.tick(state.id)
     {:noreply, state}
   end
 

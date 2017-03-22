@@ -43,7 +43,7 @@ defmodule World.Pathway do
     opposite_path = Registry.lookup(PathwayRegistry, {from_id, to_id})
     incoming_name = case length(opposite_path) do
                       1 -> elem(List.first(opposite_path), 1)
-                      _ -> "seemingly nowhere"
+                      _ -> {"seemingly nowhere", nil}
                     end
     :ok = Location.depart(from_id, {module, mob_id}, exit_name)
     :ok = Location.arrive(to_id, {{module, mob_id}, public_info}, incoming_name)

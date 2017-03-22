@@ -31,14 +31,14 @@ defmodule HumanController do
         {HumanController, state.user_id},
         public_info(state)
       },
-      "seemingly nowhere"
+      {"seemingly nowhere", nil} # Yeah, that's dirty
     )
     {:noreply, state}
   end
 
   def handle_cast({:arrive, info, from_loc}, state) do
     write_line(state.socket,
-      "#{info.name} arrived from #{from_loc}.\n")
+      "#{info.name} arrived from #{elem(from_loc, 0)}.\n")
     {:noreply, state}
   end
 
