@@ -1,6 +1,6 @@
 defmodule World.Location do
   defstruct [
-    :id, :name, :description, :pathways, corpses: [],
+    :id, :name, :description, :pathways, corpses: %{},
     entities: %{}
   ]
   use GenServer
@@ -21,20 +21,25 @@ defmodule World.Location do
     {:ok, state}
   end
 
+  # TODO an eye will need to do this
+  def look(loc_id) do
+    GenServer.call(via_tuple(loc_id), :look)
+  end
+
   def move(current_location, {module, mob_id}, new_location, public_info) do
     GenServer.cast(via_tuple(current_location), {:move, {module, mob_id}, new_location, public_info})
   end
 
   def depart(current_location, {module, mob_id}, towards) do
-    GenServer.call(via_tuple(current_location), {:depart, {module,mob_id}, towards})
+    GenServer.call(via_tuple(current_location), {:depart, {module, mob_id}, towards})
   end
 
   def arrive(new_location, {{module, id}, public_info}, from) do
     GenServer.call(via_tuple(new_location), {:arrive, {{module, id}, public_info}, from})
   end
 
-  def place(loc_id, mob_id) do
-    GenServer.cast(via_tuple(loc_id), {:place, mob_id})
+  def place_item(loc_id, corpse_pid, corpse_info) do
+    GenServer.cast(via_tuple(loc_id), {:place_item, corpse_pid, corpse_info})
   end
 
   def mobs(loc_id, filter) do
@@ -45,8 +50,9 @@ defmodule World.Location do
     mobs(loc_id, fn(_x) -> true end)
   end
 
-  def handle_cast({:place, pid}, state) do
-    {:noreply, %Location{state | corpses: [pid | state.corpses]}}
+  # TODO a hand will need to do this.
+  def handle_cast({:place_item, pid, public_info}, state) do
+    {:noreply, %Location{state | corpses: Map.put(state.corpses, pid, public_info)}}
   end
 
   def handle_cast({:monitor_pathway, pathway_pid}, state) do
@@ -62,6 +68,18 @@ defmodule World.Location do
       IO.puts "#{state.id} does not have #{mob_id}"
     end
     {:noreply, state}
+  end
+
+  def handle_call(:look, _from, state) do
+    living_things =
+      state.entities
+      |> Map.values
+      |> Enum.map(&(&1.name))
+    items = state.corpses
+      |> Map.values
+      |> Enum.map(&("the corpse of #{&1.name}"))
+    seen_things = %{living_things: living_things, items: items}
+    {:reply, seen_things, state}
   end
 
   def handle_call({:depart, {module, mob_id}, to}, _from, state) do

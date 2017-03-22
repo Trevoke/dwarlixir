@@ -14,6 +14,6 @@ defmodule Item.Supervisor do
   def create(:corpse, loc_id, public_info) do
     x = worker(Item.Corpse, [public_info], [id: public_info.id])
     {:ok, pid} = Supervisor.start_child(__MODULE__, x)
-    World.Location.place(loc_id, pid)
+    World.Location.place_item(loc_id, pid, public_info)
   end
 end

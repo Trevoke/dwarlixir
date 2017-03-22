@@ -13,10 +13,10 @@ defmodule Life.Reaper do
     GenServer.cast(__MODULE__, {:claim, mob_id, loc_id, public_info})
   end
 
-  def handle_cast({:claim, mob_id, loc_id, public_info}, state) do
+  def handle_cast({:claim, {module, mob_id}, loc_id, public_info}, state) do
     corpse_id = UUID.uuid4(:hex)
     corpse_state = Map.put(public_info, :id, corpse_id)
-    World.Location.depart(loc_id, mob_id, "to a better place")
+    World.Location.depart(loc_id, {module, mob_id}, "to a better place")
     Mobs.Dwarf.stop(mob_id)
     Item.Supervisor.create(:corpse, loc_id, corpse_state)
     {:noreply, state}

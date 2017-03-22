@@ -33,12 +33,19 @@ defmodule HumanController do
       },
       "seemingly nowhere"
     )
-    {:noreply, state}
+    {:noreply, %__MODULE__{state | location_id: loc_id}}
   end
 
   def handle_cast({:arrive, info, from_loc}, state) do
     write_line(state.socket,
       "#{info.name} arrived from #{from_loc}.\n")
+    {:noreply, state}
+  end
+
+  def handle_cast({:input, "look" <> _foo}, state) do
+    things_seen = World.Location.look(state.location_id)
+    state.socket
+    |> write_line(Kernel.inspect(things_seen.living_things) <> "\n" <> Kernel.inspect(things_seen.items))
     {:noreply, state}
   end
 

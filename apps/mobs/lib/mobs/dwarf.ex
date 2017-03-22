@@ -42,11 +42,10 @@ defmodule Mobs.Dwarf do
     {:noreply, state}
   end
 
-
   def handle_cast(:tick, %Dwarf{lifespan: 0} = state), do: {:noreply, state}
   def handle_cast(:tick, %Dwarf{name: name, lifespan: 1} = state) do
     #TODO add event
-    Life.Reaper.claim(state.id, state.location_id, public_info(state))
+    Life.Reaper.claim({__MODULE__, state.id}, state.location_id, public_info(state))
     {:noreply, %Dwarf{state | lifespan: 0}}
   end
 
@@ -110,8 +109,11 @@ defmodule Mobs.Dwarf do
 
   def stop(mob_id) do
     # TODO stop the controller and other associated processes here
+    # TODO terminate callback?
     GenServer.stop(via_mob(mob_id))
   end
+
+
 
   defp public_info(state) do
     %{
