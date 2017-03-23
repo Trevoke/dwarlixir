@@ -108,11 +108,13 @@ defmodule Mobs.Dwarf do
   end
 
   def stop(mob_id) do
-    # TODO stop the controller and other associated processes here
-    # TODO terminate callback?
     GenServer.stop(via_mob(mob_id))
   end
 
+  def terminate(reason, state) do
+    GenServer.stop(state.controller)
+    reason
+  end
 
 
   defp public_info(state) do
