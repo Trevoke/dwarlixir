@@ -8,9 +8,13 @@ defmodule Mobs.Spawn do
   end
 
   def init(args) do
+    locs =
+      World.LocationRegistry
+      |> Registry.match(:_, :_)
+      |> Enum.map(fn({_pid, val}) -> val end)
     x = 40
     Enum.each((1..x), fn id ->
-      initial_loc = Enum.random ["1", "2", "3"]
+      initial_loc = Enum.random locs
       give_birth(location: initial_loc, lifespan_type: args, id: id)
     end)
     {:ok, %{lifespan_type: args, next_id: x + 1}}

@@ -16,6 +16,7 @@ defmodule World.Location do
   end
 
   def init(%__MODULE__{pathways: pathways, id: id} = state) do
+    {id, nil} = Registry.update_value(LocationRegistry, id, fn(_x) -> id end)
     launch_known_pathways(id, pathways)
     check_for_other_pathways_to_monitor(id)
     {:ok, state}
