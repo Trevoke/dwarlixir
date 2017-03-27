@@ -54,7 +54,7 @@ defmodule HumanController do
       "the real world"
     )
     :gen_tcp.close(state.socket)
-    {:noreply, state}
+    {:stop, :normal, state}
   end
 
   def handle_cast({:input, "look"}, state) do

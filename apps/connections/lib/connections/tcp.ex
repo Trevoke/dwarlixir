@@ -28,9 +28,6 @@ defmodule Connections.Tcp do
         HumanController.join_room(user_id, "1")
         loop_connection(socket, user_id)
       {:error, error} -> write_line(socket, error)
-      {a, b} ->
-        write_line(socket, inspect(a))
-        write_line(socket, inspect(b))
     end
     # TODO disconnect on bad login
     # TODO graceful exit
@@ -38,7 +35,7 @@ defmodule Connections.Tcp do
   end
 
   def loop_connection(socket, user_id) do
-    case :gen_tcp.recv(socket, 0) do
+    case read_line(socket) do
       {:ok, input} ->
         HumanController.handle(user_id, {:input, input})
         loop_connection(socket, user_id)
@@ -46,7 +43,11 @@ defmodule Connections.Tcp do
     end
   end
 
-    defp write_line(socket, line) do
+  defp read_line(socket) do
+    :gen_tcp.recv(socket, 0)
+  end
+
+  defp write_line(socket, line) do
     :gen_tcp.send(socket, line)
   end
 
