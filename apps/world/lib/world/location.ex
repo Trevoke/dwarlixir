@@ -22,7 +22,7 @@ defmodule World.Location do
     {:ok, state}
   end
 
-  # TODO an eye will need to do this
+  # TODO will I need to create an eye for this?
   def look(loc_id) do
     GenServer.call(via_tuple(loc_id), :look)
   end
@@ -79,7 +79,12 @@ defmodule World.Location do
     items = state.corpses
       |> Map.values
       |> Enum.map(&("the corpse of #{&1.name}"))
-    seen_things = %{living_things: living_things, items: items}
+    seen_things = %{
+      living_things: living_things,
+      items: items,
+      description: state.description,
+      exits: state.pathways
+    }
     {:reply, seen_things, state}
   end
 

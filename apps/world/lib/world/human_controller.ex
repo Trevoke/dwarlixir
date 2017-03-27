@@ -17,6 +17,10 @@ defmodule HumanController do
     {:ok, user_id}
   end
 
+  def handle(user_id, {:input, input}) do
+    GenServer.cast(via_tuple(user_id), {:input, String.trim(input)})
+  end
+
   def handle(user_id, message) do
     GenServer.cast(via_tuple(user_id), message)
   end
@@ -42,10 +46,27 @@ defmodule HumanController do
     {:noreply, state}
   end
 
-  def handle_cast({:input, "look" <> _foo}, state) do
+  def handle_cast({:input, "quit"}, state) do
+    write_line(state.socket, "Goodbye.")
+    World.Location.depart(
+      state.location_id,
+      {__MODULE__, state.user_id},
+      "the real world"
+    )
+    :gen_tcp.close(state.socket)
+    {:noreply, state}
+  end
+
+  def handle_cast({:input, "look"}, state) do
     things_seen = World.Location.look(state.location_id)
+    text = things_seen.description <>
+      "\n" <>
+      Kernel.inspect(things_seen.exits) <>
+      Enum.join(things_seen.living_things, ", ") <>
+      "\n" <>
+      Enum.join(things_seen.items, ", ")
     state.socket
-    |> write_line(Kernel.inspect(things_seen.living_things) <> "\n" <> Kernel.inspect(things_seen.items))
+    |> write_line(text)
     {:noreply, state}
   end
 

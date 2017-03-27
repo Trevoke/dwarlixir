@@ -29,6 +29,7 @@ defmodule World do
       location("3", "outside", "This is the street outside the Broken Drum",
         [
           partial_pathway("1", "drum"),
+          partial_pathway("4", "east")
         ]),
       location("4", "a busy street", "The Broken Drum is West of here.",
         [
