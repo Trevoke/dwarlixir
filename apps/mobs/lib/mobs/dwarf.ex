@@ -16,7 +16,7 @@ defmodule Mobs.Dwarf do
   defp via_mob(id), do: {:via, Registry, {Registry.Mobs, id}}
 
   def init(%Dwarf{location_id: location_id} = state) do
-    {:ok, pid} = GenericMobController.start_link(%{id: state.id, timer_ref: nil})
+    {:ok, pid} = Controllers.Mob.start_link(%{id: state.id, timer_ref: nil})
     Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state)}, "seemingly nowhere")
     {:ok, %Dwarf{state | controller: pid}}
   end

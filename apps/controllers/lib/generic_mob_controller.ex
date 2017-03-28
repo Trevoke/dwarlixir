@@ -1,4 +1,4 @@
-defmodule GenericMobController do
+defmodule Controllers.Mob do
   use GenServer
 
   @tick 1000

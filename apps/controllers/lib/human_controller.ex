@@ -1,19 +1,19 @@
-defmodule HumanController do
+defmodule Controllers.Human do
   defstruct [
     :socket, :user_id, :location_id
   ]
   use GenServer
 
-  def start_link(args \\ %HumanController{}) do
+  def start_link(args \\ %__MODULE__{}) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(args.user_id))
   end
 
   defp via_tuple(id) do
-    {:via, Registry, {Registry.HumanControllerRegistry, id}}
+    {:via, Registry, {Registry.HumanControllers, id}}
   end
 
   def log_in(user_id, password, socket) do
-    HumanController.start_link(%HumanController{user_id: user_id, socket: socket})
+    Controllers.Human.start_link(%__MODULE__{user_id: user_id, socket: socket})
     {:ok, user_id}
   end
 
@@ -32,7 +32,7 @@ defmodule HumanController do
   def handle_cast({:join_room, loc_id}, state) do
     World.Location.arrive(loc_id,
       {
-        {HumanController, state.user_id},
+        {__MODULE__, state.user_id},
         public_info(state)
       },
       "seemingly nowhere"

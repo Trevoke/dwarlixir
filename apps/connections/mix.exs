@@ -37,6 +37,9 @@ defmodule Connections.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [
+      {:controllers, in_umbrella: true},
+      {:world, in_umbrella: true}
+    ]
   end
 end

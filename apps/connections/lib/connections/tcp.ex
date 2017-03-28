@@ -2,6 +2,8 @@ defmodule Connections.Tcp do
 
   require Logger
 
+  @io Connections.TCP_IO
+
   @doc """
   Starts accepting connections on the given `port`.
   """
@@ -23,9 +25,9 @@ defmodule Connections.Tcp do
 
   defp serve(socket) do
     # TODO eventually actually log in, yeah?
-    case HumanController.log_in("user1", "password", socket) do
+    case Controllers.Human.log_in("user1", "password", socket) do
       {:ok, user_id} ->
-        HumanController.join_room(user_id, "1")
+        Controllers.Human.join_room(user_id, "1")
         loop_connection(socket, user_id)
       {:error, error} -> write_line(socket, error)
     end
@@ -37,17 +39,17 @@ defmodule Connections.Tcp do
   def loop_connection(socket, user_id) do
     case read_line(socket) do
       {:ok, input} ->
-        HumanController.handle(user_id, {:input, input})
+        Controllers.Human.handle(user_id, {:input, input})
         loop_connection(socket, user_id)
-      {:error, :closed} -> IO.puts "Connection closed"
+      {:error, :closed} -> nil
     end
   end
 
-  defp read_line(socket) do
+  def read_line(socket) do
     :gen_tcp.recv(socket, 0)
   end
 
-  defp write_line(socket, line) do
+  def write_line(socket, line) do
     :gen_tcp.send(socket, line)
   end
 
