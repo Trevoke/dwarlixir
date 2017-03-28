@@ -53,5 +53,6 @@ Which might turn out to be too much code for one file in the future, and so I mi
 
 ## Tests
 
-![Look behind you! A three-headed monkey!](https://2.bp.blogspot.com/-xJeFFcqChZk/U8VKBO4kzeI/AAAAAAAADPg/RhtLrUCGzJ8/s1600/monkey_island.jpg)
+Well, right now there's a test for a user connecting via  TCP, looking, and quitting, right over here (this is not a link to master, so we can always see this test, even if it changes): https://github.com/Trevoke/dwarlixir/blob/f98a561/apps/connections/test/connections_test.exs#L5
 
+More tests are forthcoming.
