@@ -1,12 +1,12 @@
 defmodule Life.Timers do
   use GenServer
 
-  def start_link(opts) do
+  def start_link(%{} = opts) do
     GenServer.start_link(__MODULE__, opts, name: :life_timers)
   end
 
-  def init({:start_heartbeat}), do: {:ok, %{heartbeat: heartbeat_timer()}}
-  def init(_args), do: {:ok, %{}}
+  def init(%{start_heartbeat: true}), do: {:ok, %{heartbeat: heartbeat_timer()}}
+  def init(args), do: {:ok, args}
 
   def start_heartbeat do
     GenServer.call(:life_timers, {:start_heartbeat})

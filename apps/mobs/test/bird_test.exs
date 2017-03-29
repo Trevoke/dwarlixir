@@ -3,14 +3,13 @@ defmodule Mobs.BirdTest do
   doctest Mobs.Bird
 
   test "only mates with birds" do
-    IO.inspect World.Location.mobs("1")
-    # spawn a male bird
-    # spawn a female dwarf
-    # ask bird to mate
+    female_bird = Mobs.Spawn.birth(%{module: Mobs.Bird, location_id: "1", gender: :female})
+    male_dwarf = Mobs.Spawn.birth(%{module: Mobs.Dwarf, location_id: "1", gender: :male})
+    :ok = Mobs.Bird.try_to_mate(female_bird)
     # check that it failed to mate
     # kill dwarf
-    # spawn female bird
-    # ask male bird to mate
+    # spawn male bird
+    # ask female bird to mate
     # check that it did.
   end
 

@@ -24,10 +24,6 @@ defmodule Mobs.Bird do
     GenServer.cast(via_mob(mob_id), :tick)
   end
 
-  def gender(mob_id) do
-    GenServer.call(via_mob(mob_id), :gender)
-  end
-
   def handle(id, message) do
     GenServer.cast(via_mob(id), message)
   end
@@ -49,16 +45,18 @@ defmodule Mobs.Bird do
   end
 
   def handle_cast(:tick, %__MODULE__{lifespan: lifespan, pregnant: true} = state) do
-    Mobs.Spawn.birth(module: __MODULE__, location: state.location_id)
+    Mobs.Spawn.birth(%{module: __MODULE__, location_id: state.location_id})
     #TODO add event
-    {:noreply, %__MODULE__{state | lifespan: lifespan - 1, pregnant: false}}
+    new_state = %__MODULE__{state | lifespan: lifespan - 1, pregnant: false}
+    World.Location.update_public_info(new_state.location_id, {__MODULE__, new_state.id, public_info(new_state)})
+    {:noreply, new_state}
   end
 
   def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
 
     new_state = case Enum.random(1..1000) do
                   x when x < 930 -> move_to_random_location(state)
-                  _ -> try_to_mate(state)
+                  _ -> try_to_mate(state.id) && state
                   #_ -> state
                 end
 
@@ -66,20 +64,12 @@ defmodule Mobs.Bird do
   end
 
   def handle_cast(:pregnantize, state) do
-    {:noreply, %__MODULE__{state | pregnant: true}}
+    new_state = %__MODULE__{state | pregnant: true}
+    World.Location.update_public_info(new_state.location_id, {__MODULE__, new_state.id, public_info(new_state)})
+    {:noreply, new_state}
   end
 
-  def handle_call(:gender, _from, state) do
-    {:reply, state.gender, state}
-  end
-
-  defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
-    new_loc = Enum.random Pathway.exits(loc_id)
-    Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
-    %__MODULE__{state | location_id: new_loc}
-  end
-
-  defp try_to_mate(state) do
+  def handle_cast(:try_to_mate, state) do
     looking_for = case state.gender do
                     :male -> :female
                     :female -> :male
@@ -93,19 +83,25 @@ defmodule Mobs.Bird do
             info.gender == looking_for
         end)
 
-    if Enum.empty? possible_partners do
-      state
-    else
-
+    if Enum.any? possible_partners do
       partner = Enum.random possible_partners
 
       case [state.gender, elem(partner, 1).gender] do
         [:male, :female] -> __MODULE__.pregnantize(elem(partner, 0))
         [:female, :male] ->  __MODULE__.pregnantize(state.id)
       end
-
-      state
     end
+    {:noreply, state}
+  end
+
+  defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
+    new_loc = Enum.random Pathway.exits(loc_id)
+    Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
+    %__MODULE__{state | location_id: new_loc}
+  end
+
+  def try_to_mate(id) do
+    GenServer.cast(via_mob(id), :try_to_mate)
   end
 
   def stop(mob_id) do
@@ -117,11 +113,11 @@ defmodule Mobs.Bird do
     reason
   end
 
-
   defp public_info(state) do
     %{
       gender: state.gender,
-      name: state.name
+      name: state.name,
+      pregnant: state.pregnant
     }
   end
 

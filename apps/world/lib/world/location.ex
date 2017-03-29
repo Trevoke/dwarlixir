@@ -51,6 +51,19 @@ defmodule World.Location do
     mobs(loc_id, fn(_x) -> true end)
   end
 
+  def update_public_info(loc_id, {module, mob_id, public_info}) do
+    GenServer.cast(via_tuple(loc_id), {:update_public_info, module, mob_id, public_info})
+  end
+
+  def handle_cast({:update_public_info, module, mob_id, public_info}, state) do
+
+    {:noreply, %__MODULE__{state | entities: Map.update!(
+                              state.entities,
+                              {module, mob_id},
+                              fn(_x) -> public_info end)}
+    }
+  end
+
   # TODO a hand will need to do this.
   def handle_cast({:place_item, pid, public_info}, state) do
     {:noreply, %Location{state | corpses: Map.put(state.corpses, pid, public_info)}}

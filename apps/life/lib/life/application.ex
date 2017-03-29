@@ -12,7 +12,7 @@ defmodule Life.Application do
     children = [
       worker(Life.Reaper, [], restart: :permanent),
       supervisor(Registry, [:duplicate, Registry.Tick], id: :tick),
-      worker(Life.Timers, [{:start_heartbeat}], restart: :permanent)
+      worker(Life.Timers, [%{start_heartbeat: Application.get_env(:life, :start_heartbeat)}], restart: :permanent)
       # worker(Life.Timers, [[]], restart: :permanent)
     ]
 

@@ -18,8 +18,8 @@ defmodule Mobs.Spawn do
     GenServer.cast(:mobs_spawn, {:create_mobs, x})
   end
 
-  def birth(module: module, location: location_id) do
-    GenServer.cast(:mobs_spawn, {:birth, module, location_id})
+  def birth(%{} = options) do
+    GenServer.call(:mobs_spawn, {:birth, options})
   end
 
   def handle_cast({:create_mobs, number_to_spawn}, state) do
@@ -28,61 +28,56 @@ defmodule Mobs.Spawn do
       |> Registry.match(:_, :_)
       |> Enum.map(fn({_pid, val}) -> val end)
     mob_types = [Mobs.Dwarf, Mobs.Bird]
-    x = 40
-    Enum.each((state.next_id..state.next_id + x), fn id ->
+    Enum.each((state.next_id..state.next_id + number_to_spawn), fn id ->
       initial_loc = Enum.random locs
       mob_type = Enum.random mob_types
       give_birth(
-        module: mob_type,
-        location: initial_loc,
-        lifespan_type: state.lifespan_type,
-        id: id)
+        id,
+        %{module: mob_type,
+        location_id: initial_loc},
+        state)
     end)
-    {:noreply, %{state | next_id: state.next_id + x + 1}}
+    {:noreply, %{state | next_id: state.next_id + number_to_spawn + 1}}
   end
 
 
-  def handle_cast({:birth, module, location_id}, state) do
-    give_birth(
-      module: module,
-      location: location_id,
-      lifespan_type: state.lifespan_type,
-      id: state.next_id)
-    {:noreply, %{state | next_id: state.next_id + 1}}
+  def handle_call({:birth, options}, _from, state) do
+    {:ok, _} = give_birth(state.next_id, options, state)
+    {:reply, state.next_id, %{state | next_id: state.next_id + 1}}
   end
 
-  defp give_birth(module: Mobs.Dwarf, location: location_id, lifespan_type: lifespan_type, id: id) do
-    gender = Enum.random([:male, :female])
-    lifespan = random_lifespan(lifespan_type)
-    {:ok, _} = Mobs.Dwarf.start_link(%Mobs.Dwarf{id: id,
-                                                 location_id: location_id,
-                                                 gender: gender,
-                                                 name: Faker.Name.name,
-                                                 lifespan: lifespan})
+  defp give_birth(id, %{module: Mobs.Dwarf} = options, state) do
+    gender = options[:gender] || Enum.random([:male, :female])
+    lifespan = random_lifespan(state.lifespan_type)
+    Mobs.Dwarf.start_link(%Mobs.Dwarf{id: id,
+                                      location_id: options.location_id,
+                                      gender: gender,
+                                      name: Faker.Name.name,
+                                      lifespan: lifespan})
   end
 
 
-  defp give_birth(module: Mobs.Bird, location: location_id, lifespan_type: lifespan_type, id: id) do
-    gender = Enum.random([:male, :female])
-    lifespan = random_lifespan(lifespan_type)
-    {:ok, _} = Mobs.Bird.start_link(%Mobs.Bird{id: id,
-                                               location_id: location_id,
-                                               gender: gender,
-                                               name: "a bird",
-                                               lifespan: lifespan})
+  defp give_birth(id, %{module: Mobs.Bird} = options, state) do
+    gender = options[:gender] || Enum.random([:male, :female])
+    lifespan = random_lifespan(state.lifespan_type)
+    Mobs.Bird.start_link(%Mobs.Bird{id: id,
+                                    location_id: options.location_id,
+                                    gender: gender,
+                                    name: "a bird",
+                                    lifespan: lifespan})
   end
 
-  defp give_birth(module: module, location: location_id, lifespan_type: lifespan_type, id: id) do
-    gender = Enum.random([:male, :female])
-    lifespan = random_lifespan(lifespan_type)
-    {:ok, _} = apply(
-      module,
+  defp give_birth(id, options, state) do
+    gender = options[:gender] || Enum.random([:male, :female])
+    lifespan = random_lifespan(state.lifespan_type)
+    apply(
+      options.module,
       :start_link,
-      [struct(module, [id: id,
-                       location_id: location_id,
-                       gender: gender,
-                       name: Faker.Name.name,
-                       lifespan: lifespan])])
+      [struct(options.module, [id: id,
+                               location_id: options.location_id,
+                               gender: gender,
+                               name: Faker.Name.name,
+                               lifespan: lifespan])])
   end
 
 
