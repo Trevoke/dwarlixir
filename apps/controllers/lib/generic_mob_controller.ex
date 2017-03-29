@@ -13,13 +13,7 @@ defmodule Controllers.Mob do
   end
 
   def handle_cast(:tick, state) do
-    Mobs.Dwarf.tick(state.id)
+    apply(state.module, :tick, [state.id])
     {:noreply, state}
   end
-
-  # def handle_info(:tick, state) do
-  #   # TODO more generic than "Dwarf" ?
-  #   Mobs.Dwarf.tick(state.id)
-  #   {:noreply, state}
-  # end
 end

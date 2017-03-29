@@ -8,7 +8,13 @@ defmodule Mobs.Supervisor do
   def init(_args) do
     children = [
       supervisor(Registry, [:unique, Registry.Mobs], id: :mobs),
-      worker(Mobs.Spawn, [{:short_lifespan}], restart: :permanent)
+      worker(Mobs.Spawn, [
+            %{
+              lifespan_type: Application.get_env(:mobs, :lifespan),
+              spawn_on_start: Application.get_env(:mobs, :spawn_on_start),
+              next_id: 1
+             }
+          ], restart: :permanent)
     ]
 
     supervise(children, strategy: :one_for_one)

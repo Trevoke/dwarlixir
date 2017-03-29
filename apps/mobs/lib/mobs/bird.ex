@@ -1,4 +1,4 @@
-defmodule Mobs.Dwarf do
+defmodule Mobs.Bird do
   defstruct [
     :id, :location_id, :lifespan,
     :gender, :controller, :pregnant,
@@ -8,7 +8,7 @@ defmodule Mobs.Dwarf do
 
   alias World.{Location, Pathway}
 
-  def start_link(%__MODULE__{} = args) do
+  def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_mob(args.id), restart: :transient)
   end
 
@@ -88,8 +88,10 @@ defmodule Mobs.Dwarf do
     possible_partners =
       Location.mobs(
         state.location_id,
-        fn({_, info}) -> info.gender == looking_for end
-      )
+        fn({{module, id}, info}) ->
+          module == __MODULE__ &&
+            info.gender == looking_for
+        end)
 
     if Enum.empty? possible_partners do
       state

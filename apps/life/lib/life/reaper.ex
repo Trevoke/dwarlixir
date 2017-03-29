@@ -17,7 +17,7 @@ defmodule Life.Reaper do
     corpse_id = UUID.uuid4(:hex)
     corpse_state = Map.put(public_info, :id, corpse_id)
     World.Location.depart(loc_id, {module, mob_id}, "to a better place")
-    Mobs.Dwarf.stop(mob_id)
+    apply(module, :stop, [mob_id])
     Item.Supervisor.create(:corpse, loc_id, corpse_state)
     {:noreply, state}
   end

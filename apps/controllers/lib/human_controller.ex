@@ -59,15 +59,25 @@ defmodule Controllers.Human do
 
   def handle_cast({:input, "look"}, state) do
     things_seen = World.Location.look(state.location_id)
-    text = things_seen.description <>
-      "\n" <>
-      Kernel.inspect(things_seen.exits) <>
-      Enum.join(things_seen.living_things, ", ") <>
-      "\n" <>
-      Enum.join(things_seen.items, ", ")
+
+    text = """
+    #{things_seen.description}
+    #{read_exits(things_seen.exits)}
+    #{Enum.join(things_seen.living_things, ", ")}
+    #{Enum.join(things_seen.items, ", ")}
+    """
+    |> String.trim()
     state.socket
     |> write_line(text)
     {:noreply, state}
+  end
+
+  defp read_exits(exits) do
+    exit_text =
+      exits
+      |> Enum.map(fn(x) -> x.name end)
+      |> Enum.join(", ")
+    "Exits: #{exit_text}."
   end
 
   def handle_cast({:input, input}, state) do
