@@ -7,7 +7,7 @@ defmodule World.Location do
 
   alias World.{Location, LocationRegistry, Pathway, PathwayRegistry}
 
-  def start_link(args) do
+  def start_link(%__MODULE__{} = args) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(args.id))
   end
 
@@ -131,5 +131,13 @@ defmodule World.Location do
     |> Enum.map(fn({pid, _}) -> pid end)
     |> Enum.each(fn(pid) -> Process.link(pid) end)
   end
+
+  # def stop(loc_id), do: GenServer.stop(via_tuple(loc_id))
+
+  # def terminate(reason, state) do
+  #   for %{from_id: from_id, name: name} <- state.pathways do
+  #     World.Pathway.stop(from_id, state.id)
+  #   end
+  # end
 
 end

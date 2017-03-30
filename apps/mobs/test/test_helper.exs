@@ -1,1 +1,5 @@
+Application.ensure_all_started(:world)
+Application.ensure_all_started(:mobs)
+Application.ensure_all_started(:controllers)
+Application.ensure_all_started(:life)
 ExUnit.start()

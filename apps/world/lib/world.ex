@@ -1,18 +1,26 @@
 defmodule World do
   use Supervisor
 
-  alias World.Location
-
-  def start_link(opts \\ []) do
-    Supervisor.start_link(__MODULE__, opts)
+  def start_link(opts \\ %{}) do
+    Supervisor.start_link(__MODULE__, opts, name: :world)
   end
 
-  def init(_opts) do
+  def init(%{spawn_locations: false}), do: supervise([], strategy: :one_for_one)
+
+  def init(%{spawn_locations: true}) do
     children =
       map_data()
-      |> Enum.map(fn(location) -> worker(Location, [location], id: location.id) end)
+      |> Enum.map(&(new_loc(&1)))
 
     supervise(children, strategy: :one_for_one)
+  end
+
+  def start_child(opts) do
+    Supervisor.start_child(:world, new_loc(opts))
+  end
+
+  def new_loc(opts) do
+    worker(World.Location, [opts], restart: :transient, id: opts.id)
   end
 
   defp map_data do
@@ -44,7 +52,7 @@ defmodule World do
   end
 
   defp location(id, name, desc, pathways) do
-    %Location{
+    %World.Location{
       id: id,
       name: name,
       description: desc,

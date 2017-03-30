@@ -6,7 +6,7 @@ defmodule Mobs.Bird do
   ]
   use GenServer
 
-  alias World.{Location, Pathway}
+  alias World.Pathway
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_mob(args.id), restart: :transient)
@@ -16,7 +16,7 @@ defmodule Mobs.Bird do
 
   def init(%__MODULE__{location_id: location_id} = state) do
     {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: state.id, timer_ref: nil})
-    Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state)}, "seemingly nowhere")
+    World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state)}, "seemingly nowhere")
     {:ok, %__MODULE__{state | controller: pid}}
   end
 
@@ -55,7 +55,7 @@ defmodule Mobs.Bird do
   def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
 
     new_state = case Enum.random(1..1000) do
-                  x when x < 930 -> move_to_random_location(state)
+                  #x when x < 930 -> move_to_random_location(state)
                   _ -> try_to_mate(state.id) && state
                   #_ -> state
                 end
@@ -76,7 +76,7 @@ defmodule Mobs.Bird do
                   end
 
     possible_partners =
-      Location.mobs(
+      World.Location.mobs(
         state.location_id,
         fn({{module, id}, info}) ->
           module == __MODULE__ &&
@@ -96,7 +96,7 @@ defmodule Mobs.Bird do
 
   defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
     new_loc = Enum.random Pathway.exits(loc_id)
-    Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
+    World.Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
     %__MODULE__{state | location_id: new_loc}
   end
 

@@ -19,7 +19,7 @@ defmodule Mobs.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [extra_applications: [:logger],
-     mod: {Mobs, []}]
+     mod: {Mobs.Application, []}]
   end
 
   # Dependencies can be Hex packages:
@@ -34,10 +34,11 @@ defmodule Mobs.Mixfile do
   defp deps do
     [
       {:faker, "~> 0.7.0"},
-      {:world, in_umbrella: true},
       {:controllers, in_umbrella: true},
+      {:world, in_umbrella: true},
+      {:life, in_umbrella: true},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
-      {:credo, "~> 0.6.1"}
+      {:credo, "~> 0.6.1", only: [:dev], runtime: false}
     ]
   end
 end

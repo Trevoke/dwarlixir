@@ -12,9 +12,7 @@ defmodule World.Application do
     children = [
       supervisor(Registry, [:unique, World.LocationRegistry], id: :location_registry),
       supervisor(Registry, [:unique, World.PathwayRegistry], id: :pathway_registry),
-      worker(World, [])
-      # Starts a worker by calling: World.Worker.start_link(arg1, arg2, arg3)
-      # worker(World.Worker, [arg1, arg2, arg3]),
+      supervisor(World, [%{spawn_locations: Application.get_env(:world, :spawn_locations)}])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
