@@ -1,5 +1,9 @@
 # Dwarlixir
 
+## Getting started
+
+Clone the project. run `iex -S mix`. When the app starts, in another terminal, run `telnet localhost 4040`. you can type `look` and `quit`. AMAZING, IS IT NOT?
+
 ## Background
 This project started off as the collision of two thoughts: "I want to build a MUD where each room is its own process" and "I bet I could build an amazing Dwarf Fortress clone in Elixir".
 
@@ -25,7 +29,7 @@ The basic code pattern I follow right now is something like this:
 ```elixir
 defmodule Location do
   defstruct [
-    :id, :name, :description, :pathways, 
+    :id, :name, :description, :pathways,
     corpses: [], mobs: %{}
   ]
   use GenServer
