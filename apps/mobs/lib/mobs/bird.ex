@@ -55,7 +55,7 @@ defmodule Mobs.Bird do
   def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
 
     new_state = case Enum.random(1..1000) do
-                  #x when x < 930 -> move_to_random_location(state)
+                  when x < 930 -> move_to_random_location(state)
                   _ -> try_to_mate(state.id) && state
                   #_ -> state
                 end
@@ -75,20 +75,14 @@ defmodule Mobs.Bird do
                     :female -> :male
                   end
 
-    possible_partners =
-      World.Location.mobs(
-        state.location_id,
-        fn({{module, id}, info}) ->
-          module == __MODULE__ &&
-            info.gender == looking_for
-        end)
+    possible_partners = World.Location.mobs(state.location_id, fn({{module, id}, info}) -> module == Mobs.Bird && info.gender == looking_for end)
 
     if Enum.any? possible_partners do
       partner = Enum.random possible_partners
 
       case [state.gender, elem(partner, 1).gender] do
         [:male, :female] -> __MODULE__.pregnantize(elem(partner, 0))
-        [:female, :male] ->  __MODULE__.pregnantize(state.id)
+        [:female, :male] -> __MODULE__.pregnantize(state.id)
       end
     end
     {:noreply, state}
