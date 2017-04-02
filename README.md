@@ -70,3 +70,4 @@ https://github.com/Trevoke/dwarlixir/blob/826de2cff64826ad8f8e82619f8d9b1a3de764
 This is the simplest integration test I have yet. Ι need to work on this more, because right now I have a sleep in there to give the async messages time to get through.
 
 The documentation for `Process.sleep/1` suggests sending a message back to the calling process, but I'm not sure this makes a lot of sense for me _in production_ because .. I think the messages would be sent back to the timer process that sends the tick message at a regular interval? So. Things in progress.
+https://github.com/Trevoke/dwarlixir/blob/36c6c43d7e2d44d90c8e2863e41850a744e6c94c/apps/mobs/test/bird_test.exs
