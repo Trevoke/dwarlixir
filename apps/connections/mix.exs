@@ -39,7 +39,8 @@ defmodule Connections.Mixfile do
   defp deps do
     [
       {:controllers, in_umbrella: true},
-      {:world, in_umbrella: true}
+      {:world, in_umbrella: true},
+      {:doc_first_formatter, "~> 0.0.2", only: [:test]}
     ]
   end
 end

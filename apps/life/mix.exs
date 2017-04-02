@@ -38,7 +38,8 @@ defmodule Life.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:petick, "~> 0.0.1"}
+      {:petick, "~> 0.0.1"},
+      {:doc_first_formatter, "~> 0.0.2", only: [:test]}
     ]
   end
 end
