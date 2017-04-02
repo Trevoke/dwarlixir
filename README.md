@@ -1,5 +1,7 @@
 # Dwarlixir
-![Travis build](https://travis-ci.org/Trevoke/dwarlixir.svg?branch=master)
+* Travis ![Travis build](https://travis-ci.org/Trevoke/dwarlixir.svg?branch=master)
+* Semaphore [![Build Status](https://semaphoreci.com/api/v1/trevoke/dwarlixir/branches/master/badge.svg)](https://semaphoreci.com/trevoke/dwarlixir)
+
 ## Getting started
 
 Clone the project. run `iex -S mix`. When the app starts, in another terminal, run `telnet localhost 4040`. you can type `look` and `quit`. AMAZING, IS IT NOT?
