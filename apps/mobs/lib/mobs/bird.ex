@@ -48,14 +48,13 @@ defmodule Mobs.Bird do
     Mobs.Spawn.birth(%{module: __MODULE__, location_id: state.location_id})
     #TODO add event
     new_state = %__MODULE__{state | lifespan: lifespan - 1, pregnant: false}
-    World.Location.update_public_info(new_state.location_id, {__MODULE__, new_state.id, public_info(new_state)})
     {:noreply, new_state}
   end
 
   def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
 
     new_state = case Enum.random(1..1000) do
-                  when x < 930 -> move_to_random_location(state)
+                  x when x < 930 -> move_to_random_location(state)
                   _ -> try_to_mate(state.id) && state
                   #_ -> state
                 end
@@ -65,7 +64,6 @@ defmodule Mobs.Bird do
 
   def handle_cast(:pregnantize, state) do
     new_state = %__MODULE__{state | pregnant: true}
-    World.Location.update_public_info(new_state.location_id, {__MODULE__, new_state.id, public_info(new_state)})
     {:noreply, new_state}
   end
 
@@ -75,17 +73,21 @@ defmodule Mobs.Bird do
                     :female -> :male
                   end
 
-    possible_partners = World.Location.mobs(state.location_id, fn({{module, id}, info}) -> module == Mobs.Bird && info.gender == looking_for end)
+    possible_partners = World.Location.mobs(state.location_id)
 
-    if Enum.any? possible_partners do
-      partner = Enum.random possible_partners
+    {:ok, {new_state, messages}} =
+      Mobs.SexualReproduction.call(
+        {state, []},
+        {
+          state.gender,
+          looking_for,
+          __MODULE__,
+          possible_partners
+        })
 
-      case [state.gender, elem(partner, 1).gender] do
-        [:male, :female] -> __MODULE__.pregnantize(elem(partner, 0))
-        [:female, :male] -> __MODULE__.pregnantize(state.id)
-      end
-    end
-    {:noreply, state}
+    Enum.each(messages, fn({m, f, a}) -> Kernel.apply(m, f, a) end)
+
+    {:noreply, new_state}
   end
 
   defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
