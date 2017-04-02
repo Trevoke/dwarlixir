@@ -12,7 +12,11 @@ defmodule Item.Corpse do
     {:ok, Map.put(state, :lifespan, 100)}
   end
 
-  def handle_cast(:tick, %{lifespan: 0} = state), do: {:noreply, state}
+  def handle_cast(:tick, %{lifespan: 0} = state) do
+    # TODO send a message?
+    GenServer.stop(self())
+    {:noreply, state}
+  end
   def handle_cast(:tick, %{lifespan: lifespan} = state) do
     {:noreply, %{state | lifespan: lifespan - 1}}
   end

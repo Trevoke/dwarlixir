@@ -59,6 +59,14 @@ Which might turn out to be too much code for one file in the future, and so I mi
 
 ## Tests
 
-Well, right now there's a test for a user connecting via  TCP, looking, and quitting, right over here (this is not a link to master, so we can always see this test, even if it changes): https://github.com/Trevoke/dwarlixir/blob/f98a561/apps/connections/test/connections_test.exs#L5
+### End-to-end
+There's a simple test for a user connecting via  TCP, looking, and quitting, right over here (this is not a link to master, so we can always see this test, even if it changes): https://github.com/Trevoke/dwarlixir/blob/f98a561/apps/connections/test/connections_test.exs#L5
 
-More tests are forthcoming.
+### Pipelinable code... Maybe? (ECS?)
+This is how reproduction works right now:
+https://github.com/Trevoke/dwarlixir/blob/826de2cff64826ad8f8e82619f8d9b1a3de7646e/apps/mobs/lib/mobs/sexual_reproduction.ex
+
+### Things dying
+This is the simplest integration test I have yet. Ι need to work on this more, because right now I have a sleep in there to give the async messages time to get through.
+
+The documentation for `Process.sleep/1` suggests sending a message back to the calling process, but I'm not sure this makes a lot of sense for me _in production_ because .. I think the messages would be sent back to the timer process that sends the tick message at a regular interval? So. Things in progress.

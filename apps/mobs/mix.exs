@@ -39,7 +39,8 @@ defmodule Mobs.Mixfile do
       {:life, in_umbrella: true},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
       {:credo, "~> 0.6.1", only: [:dev], runtime: false},
-      {:doc_first_formatter, "~> 0.0.2", only: [:test]}
+      {:doc_first_formatter, "~> 0.0.2", only: [:test]},
+      { :uuid, "~> 1.1" }
     ]
   end
 end

@@ -91,9 +91,14 @@ defmodule Mobs.Dwarf do
   end
 
   defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
-    new_loc = Enum.random Pathway.exits(loc_id)
-    Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
-    %__MODULE__{state | location_id: new_loc}
+    possible_exits =  Pathway.exits(loc_id)
+    if Enum.empty? possible_exits do
+      state
+    else
+      new_loc = Enum.random Pathway.exits(loc_id)
+      World.Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
+      %__MODULE__{state | location_id: new_loc}
+    end
   end
 
   def try_to_mate(id) do

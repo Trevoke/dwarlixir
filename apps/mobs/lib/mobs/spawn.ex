@@ -59,7 +59,7 @@ defmodule Mobs.Spawn do
 
   defp give_birth(id, %{module: Mobs.Bird} = options, state) do
     gender = options[:gender] || Enum.random([:male, :female])
-    lifespan = random_lifespan(state.lifespan_type)
+    lifespan = options[:lifespan] || random_lifespan(state.lifespan_type)
     Mobs.Bird.start_link(%Mobs.Bird{id: id,
                                     location_id: options.location_id,
                                     gender: gender,
