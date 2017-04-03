@@ -62,7 +62,7 @@ defmodule Controllers.Human do
 
     text = """
     #{things_seen.description}
-    #{read_exits(things_seen.exits)}
+    #{Bunt.ANSI.format [:green, read_exits(things_seen.exits)]}
     #{Enum.join(things_seen.living_things, ", ")}
     #{Enum.join(things_seen.items, ", ")}
     """
