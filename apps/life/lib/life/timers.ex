@@ -5,27 +5,30 @@ defmodule Life.Timers do
     GenServer.start_link(__MODULE__, opts, name: :life_timers)
   end
 
-  def init(%{start_heartbeat: true}), do: {:ok, %{heartbeat: heartbeat_timer()}}
+  def init(%{start_heartbeat: true}), do: {:ok, %{heartbeat: new_timer()}}
   def init(args), do: {:ok, args}
 
   def start_heartbeat do
-    GenServer.call(:life_timers, {:start_heartbeat})
+    GenServer.call(:life_timers, :start_heartbeat)
   end
 
   def stop_heartbeat do
-    GenServer.call(:life_timers, {:stop_heartbeat})
+    GenServer.call(:life_timers, :stop_heartbeat)
   end
 
-  def handle_call({:start_heartbeat}, _from, state) do
-    {:reply, :ok, Map.put(state, :heartbeat, heartbeat_timer())}
+  def handle_call(:start_heartbeat, _from, state) do
+    tref = new_timer()
+    {:reply, tref, Map.put(state, :heartbeat, tref)}
   end
 
-  def handle_call({:stop_heartbeat}, _from, %{heartbeat: heartbeat} = state) do
-    {:ok, _} = :timer.cancel(heartbeat)
+  def handle_call(:stop_heartbeat, _from, %{heartbeat: heartbeat} = state) do
+    :ok = Petick.terminate(heartbeat)
     {:reply, :ok, Map.delete(state, :heartbeat)}
   end
 
-  defp heartbeat_timer do
+  def handle_call(:stop_heartbeat, _from, state), do: {:reply, :no_heartbeat, state}
+
+  defp new_timer do
     {:ok, tref} =
       Petick.start(
       interval: 1000,

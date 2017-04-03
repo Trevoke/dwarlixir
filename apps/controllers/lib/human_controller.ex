@@ -13,8 +13,11 @@ defmodule Controllers.Human do
   end
 
   def log_in(user_id, password, socket) do
-    Controllers.Human.start_link(%__MODULE__{user_id: user_id, socket: socket})
-    {:ok, user_id}
+    with {:ok, pid} <- Controllers.Human.start_link(%__MODULE__{user_id: user_id, socket: socket}) do
+      {:ok, user_id}
+    else
+      {:error, {:already_started, _pid}} -> {:error, :username_taken}
+    end
   end
 
   def handle(user_id, {:input, input}) do

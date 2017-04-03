@@ -24,11 +24,15 @@ defmodule Connections.Tcp do
   end
 
   defp serve(socket) do
-    # TODO eventually actually log in, yeah?
-    case Controllers.Human.log_in("user1", "password", socket) do
+    write_line(socket, "Choose a username: ")
+    {:ok, username} = read_line(socket)
+    case Controllers.Human.log_in(username, "password", socket) do
       {:ok, user_id} ->
         Controllers.Human.join_room(user_id, "1")
         loop_connection(socket, user_id)
+      {:error, :username_taken} ->
+        write_line(socket, "Username already online. Try another.\n")
+        serve(socket)
       {:error, error} -> write_line(socket, error)
     end
     # TODO disconnect on bad login

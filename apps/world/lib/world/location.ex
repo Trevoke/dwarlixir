@@ -61,12 +61,16 @@ defmodule World.Location do
     {:noreply, state}
   end
 
+  import IEx
   def handle_cast({:move, {module, mob_id}, new_location, mob_public_info}, state) do
     pathway_tuple = {state.id, new_location}
     if Enum.member?(Map.keys(state.entities), {module, mob_id}) do
       Pathway.move(pathway_tuple, {module, mob_id}, mob_public_info)
     else
+      # TODO Okay, how do we actually get to this state... ?
+      Life.Timers.stop_heartbeat
       IO.puts "#{state.id} does not have #{mob_id}"
+      IEx.pry
     end
     {:noreply, state}
   end

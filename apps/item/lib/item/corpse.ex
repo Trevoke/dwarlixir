@@ -9,7 +9,7 @@ defmodule Item.Corpse do
 
   def init(state) do
     Registry.register(Registry.Tick, :subject_to_time, nil)
-    {:ok, Map.put(state, :lifespan, 100)}
+    {:ok, Map.put(state, :lifespan, 10)}
   end
 
   def handle_cast(:tick, %{lifespan: 0} = state) do
