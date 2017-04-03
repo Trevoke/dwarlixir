@@ -28,6 +28,10 @@ defmodule Mobs.Dwarf do
     GenServer.cast(via_mob(id), message)
   end
 
+  # TODO kill this
+  def loc(id), do: GenServer.call(via_mob(id), :loc)
+  def handle_call(:loc, _from, state), do: {:reply, state.location_id, state}
+
   # This has made so many people laugh that I can't rename it.
   def pregnantize(mob_id) do
     GenServer.cast(via_mob(mob_id), :pregnantize)
