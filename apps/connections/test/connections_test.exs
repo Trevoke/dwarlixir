@@ -13,6 +13,8 @@ defmodule ConnectionsTest do
     {:ok, socket} = :gen_tcp.connect('127.0.0.1', 4040, [
           :binary, packet: :raw, active: :false
         ])
+    :gen_tcp.recv(socket, 0)
+    :gen_tcp.send(socket, "user1\n")
     :gen_tcp.send(socket, "look\n")
     {:ok, x} = :gen_tcp.recv(socket, 0)
     room_desc = x |> String.split("\n") |> List.first
