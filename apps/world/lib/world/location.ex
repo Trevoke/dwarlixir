@@ -71,8 +71,11 @@ defmodule World.Location do
       IO.puts "#{state.id} does not have #{module}, #{mob_id}"
       [{pid, _value}] = Registry.lookup(Registry.Mobs, mob_id)
       if pid do
-        mobloc = apply(module, :loc, [mob_id])
-        IO.puts "That mob is in #{mobloc}."
+        ["1", "2", "3", "4", "5"] -- [state.id]
+        |> Enum.map(fn(loc_id) -> {loc_id, World.Location.look(loc_id).living_things} end)
+        |> Enum.map(fn({loc_id, entities}) -> {loc_id, Enum.member?(entities, {module, mob_id})} end)
+        |> IO.inspect
+        IO.puts "The mob is in #{:sys.get_state(pid).location_id}"
       else
         IO.puts "#{state.id} was asked to move {#{module}, #{mob_id}} but pid is dead."
       end

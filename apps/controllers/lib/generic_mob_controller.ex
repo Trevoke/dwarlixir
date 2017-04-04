@@ -16,4 +16,9 @@ defmodule Controllers.Mob do
     apply(state.module, :tick, [state.id])
     {:noreply, state}
   end
+
+  def terminate(reason, state) do
+    Registry.unregister(Registry.Tick, :subject_to_time)
+    reason
+  end
 end

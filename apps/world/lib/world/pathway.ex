@@ -48,8 +48,15 @@ defmodule World.Pathway do
                       |> elem(0)
                       _ -> "seemingly nowhere"
                     end
-    :ok = Location.depart(from_id, {module, mob_id}, exit_name)
-    :ok = Location.arrive(to_id, {{module, mob_id}, public_info}, incoming_name)
+
+    tasks = [
+      Task.async(fn() -> Location.depart(from_id, {module, mob_id}, exit_name) end),
+      Task.async(fn() -> Location.arrive(to_id, {{module, mob_id}, public_info}, incoming_name) end),
+      Task.async(fn() -> Kernel.apply(module, :set_location, [mob_id, to_id]) end)
+    ]
+
+    Enum.map(tasks, &Task.await/1)
+
     {:noreply, state}
   end
 
