@@ -31,16 +31,22 @@ defmodule World.Location do
     GenServer.cast(via_tuple(current_location), {:move, {module, mob_id}, new_location, public_info})
   end
 
-  def depart(current_location, {module, mob_id}, towards) do
-    GenServer.call(via_tuple(current_location), {:depart, {module, mob_id}, towards})
+  def depart(current_location, {module, mob_id}, public_info, towards) do
+    GenServer.call(via_tuple(current_location), {:depart, {module, mob_id}, public_info, towards})
   end
 
-  def arrive(new_location, {{module, id}, public_info}, from) do
-    GenServer.call(via_tuple(new_location), {:arrive, {{module, id}, public_info}, from})
+  def arrive(new_location, {{module, id}, public_info, from}) do
+    GenServer.call(via_tuple(new_location), {:arrive, {module, id}, public_info, from})
   end
 
   def place_item(loc_id, corpse_pid, corpse_info) do
     GenServer.cast(via_tuple(loc_id), {:place_item, corpse_pid, corpse_info})
+  end
+
+  def send_notification(state, function) do
+    state.entities
+    |> Map.keys
+    |> Enum.each(function)
   end
 
   def mobs(loc_id, filter) do
@@ -66,19 +72,12 @@ defmodule World.Location do
     if Enum.member?(Map.keys(state.entities), {module, mob_id}) do
       Pathway.move(pathway_tuple, {module, mob_id}, mob_public_info)
     else
-      # TODO Okay, locs and mobs get out of sync at some point.
-      #Life.Timers.stop_heartbeat
-      IO.puts "#{state.id} does not have #{module}, #{mob_id}"
-      [{pid, _value}] = Registry.lookup(Registry.Mobs, mob_id)
-      if pid do
-        ["1", "2", "3", "4", "5"] -- [state.id]
-        |> Enum.map(fn(loc_id) -> {loc_id, World.Location.look(loc_id).living_things} end)
-        |> Enum.map(fn({loc_id, entities}) -> {loc_id, Enum.member?(entities, {module, mob_id})} end)
-        |> IO.inspect
-        IO.puts "The mob is in #{:sys.get_state(pid).location_id}"
-      else
-        IO.puts "#{state.id} was asked to move {#{module}, #{mob_id}} but pid is dead."
-      end
+      # Okay, locs and mobs get out of sync at some point.
+      # I could try to troubleshoot it
+      # Or I could just kill the fucking things
+      # Death to smoochie it is
+      Kernel.apply(module, :stop, [mob_id])
+      World.purge({module, mob_id}, mob_public_info, [state.id])
     end
     {:noreply, state}
   end
@@ -100,15 +99,23 @@ defmodule World.Location do
     {:reply, seen_things, state}
   end
 
-  def handle_call({:depart, {module, mob_id}, to}, _from, state) do
+  def handle_call({:depart, {module, mob_id}, public_info, to}, _from, state) do
+    send_notification(state, fn({module, id}) ->
+      Kernel.apply(
+        module,
+        :handle,
+        [id, {:depart, public_info, to}])
+    end)
     {:reply, :ok, %Location{state | entities: Map.delete(state.entities, {module, mob_id})}}
   end
 
-  def handle_call({:arrive, {{module, mob_id}, public_info}, from_loc}, _from, state) do
-    state.entities
-    |> Map.keys
-    |> Enum.each(fn({module, id}) ->
-      Kernel.apply(module, :handle, [id, {:arrive, public_info, from_loc}]) end)
+  def handle_call({:arrive, {module, mob_id}, public_info, from_loc}, _from, state) do
+    send_notification(state, fn({module, id}) ->
+      Kernel.apply(
+        module,
+        :handle,
+        [id, {:arrive, public_info, from_loc}])
+    end)
     {:reply, :ok, %Location{state | entities: Map.put(state.entities, {module, mob_id}, public_info)}}
   end
 

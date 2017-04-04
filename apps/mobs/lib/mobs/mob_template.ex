@@ -17,7 +17,7 @@ defmodule Mobs.MobTemplate do
 
       def init(%__MODULE__{location_id: location_id} = state) do
         {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: state.id, timer_ref: nil})
-        World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state)}, "seemingly nowhere")
+        World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state), "seemingly nowhere"})
         {:ok, %__MODULE__{state | controller: pid}}
       end
 
@@ -43,6 +43,11 @@ defmodule Mobs.MobTemplate do
       def handle_cast({:arrive, info, from_loc}, state) do
         {:noreply, state}
       end
+
+      def handle_cast({:depart, info, to_loc}, state) do
+        {:noreply, state}
+      end
+
 
       def handle_cast(:tick, %__MODULE__{name: name, lifespan: 1} = state) do
         #TODO add event
@@ -98,14 +103,11 @@ defmodule Mobs.MobTemplate do
 
       defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
         possible_exits = World.Pathway.exits(loc_id)
-        if Enum.empty? possible_exits do
-          state
-        else
-          new_loc = Enum.random World.Pathway.exits(loc_id)
+        if Enum.any? possible_exits do
+          new_loc = Enum.random possible_exits
           World.Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
-          state
-          #%__MODULE__{state | location_id: new_loc}
         end
+        state
       end
 
       def try_to_mate(id) do

@@ -36,9 +36,9 @@ defmodule Controllers.Human do
     World.Location.arrive(loc_id,
       {
         {__MODULE__, state.user_id},
-        public_info(state)
-      },
-      "seemingly nowhere"
+        public_info(state),
+        "seemingly nowhere"
+      }
     )
     {:noreply, %__MODULE__{state | location_id: loc_id}}
   end
@@ -49,11 +49,18 @@ defmodule Controllers.Human do
     {:noreply, state}
   end
 
+  def handle_cast({:depart, info, to}, state) do
+    write_line(state.socket,
+    "#{info.name} is leaving #{to}.\n")
+    {:noreply, state}
+  end
+
   def handle_cast({:input, "quit"}, state) do
     write_line(state.socket, "Goodbye.")
     World.Location.depart(
       state.location_id,
       {__MODULE__, state.user_id},
+      state,
       "the real world"
     )
     :gen_tcp.close(state.socket)
@@ -66,13 +73,25 @@ defmodule Controllers.Human do
     text = """
     #{things_seen.description}
     #{Bunt.ANSI.format [:green, read_exits(things_seen.exits)]}
-    #{Enum.join(things_seen.living_things, ", ")}
+    #{read_entities(things_seen.living_things)}
     #{Enum.join(things_seen.items, ", ")}
     """
     |> String.trim()
     state.socket
-    |> write_line(text)
+    |> write_line(text <> "\n")
     {:noreply, state}
+  end
+
+  defp read_entities(entities) do
+    entities
+    |> Enum.group_by(&(&1))
+    |> Enum.map(fn({k, v}) -> {k, Enum.count(v)} end)
+    |> Enum.sort(fn({_n1, c1}, {_n2, c2}) -> c1 > c2 end)
+    |> Enum.map(fn
+      {name, 1} -> name
+      {name, count} -> "#{count} #{name}"
+    end)
+    |> Enum.join(", ")
   end
 
   defp read_exits(exits) do
@@ -85,14 +104,6 @@ defmodule Controllers.Human do
 
   def handle_cast({:input, input}, state) do
     write_line(state.socket, "Just received '#{input}'\n")
-    {:noreply, state}
-  end
-
-  def handle_cast({:depart, loc_id, mob_id}, state) do
-    write_line(
-      state.socket,
-      "Mob #{mob_id} is leaving #{loc_id} in direction [not implemented]"
-    )
     {:noreply, state}
   end
 

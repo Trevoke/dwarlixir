@@ -4,8 +4,9 @@ defmodule World.Pathway do
   ]
 
   @type t :: %World.Pathway{ from_id: String.t,
-                       to_id: String.t,
-                       name: String.t }
+                             to_id: String.t,
+                             name: String.t }
+
   use GenServer
   alias World.{Location, PathwayRegistry}
 
@@ -19,7 +20,7 @@ defmodule World.Pathway do
 
   def init(state) do
     tuple = {state.from_id, state.to_id}
-    new_value = fn(_) -> tuple end
+    new_value = fn(_) -> state.name end
     PathwayRegistry
     |> Registry.update_value(tuple, new_value)
     {:ok, state}
@@ -32,7 +33,7 @@ defmodule World.Pathway do
   def exits(location_id) do
     PathwayRegistry
     |> Registry.match({location_id, :_}, :_)
-    |> Enum.map(fn({_pid, tuple}) -> tuple end)
+    |> Enum.flat_map(fn({pid, _}) -> Registry.keys(PathwayRegistry, pid) end)
     |> Enum.map(fn({_from, id}) -> id end)
   end
 
@@ -45,17 +46,16 @@ defmodule World.Pathway do
                       1 -> opposite_path
                       |> List.first
                       |> elem(1)
-                      |> elem(0)
                       _ -> "seemingly nowhere"
                     end
 
     tasks = [
-      Task.async(fn() -> Location.depart(from_id, {module, mob_id}, exit_name) end),
-      Task.async(fn() -> Location.arrive(to_id, {{module, mob_id}, public_info}, incoming_name) end),
+      Task.async(fn() -> Location.depart(from_id, {module, mob_id}, public_info, exit_name) end),
+      Task.async(fn() -> Location.arrive(to_id, {{module, mob_id}, public_info, incoming_name}) end),
       Task.async(fn() -> Kernel.apply(module, :set_location, [mob_id, to_id]) end)
     ]
 
-    Enum.map(tasks, &Task.await/1)
+    [:ok, :ok, :ok] = Enum.map(tasks, &Task.await/1)
 
     {:noreply, state}
   end

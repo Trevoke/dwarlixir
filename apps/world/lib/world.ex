@@ -19,6 +19,14 @@ defmodule World do
     Supervisor.start_child(:world, new_loc(opts))
   end
 
+  def purge({module, id}, info, ignored_locations) do
+    World.LocationRegistry
+    |> Registry.match(:_, :_)
+    |> Enum.map(fn({_pid, loc_id}) -> loc_id end)
+    |> Enum.reject(fn(loc_id) -> Enum.member?(ignored_locations, loc_id) end)
+    |> Enum.each(fn(loc_id) -> World.Location.depart(loc_id, {module, id}, info, "because it angered the gods.") end)
+  end
+
   def new_loc(opts) do
     worker(World.Location, [opts], restart: :transient, id: opts.id)
   end
