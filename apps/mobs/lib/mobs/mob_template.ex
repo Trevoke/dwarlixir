@@ -65,8 +65,9 @@ defmodule Mobs.MobTemplate do
       def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
 
         new_state = case Enum.random(1..1000) do
-                      x when x < 930 -> move_to_random_location(state)
-                      _ -> try_to_mate(state.id) && state
+                      x when x < 600 -> state
+                      x when x < 970 -> move_to_random_location(state)
+                      x when x <= 1000 -> try_to_mate(state.id) && state
                       #_ -> state
                     end
 
