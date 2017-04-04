@@ -13,11 +13,19 @@ defmodule Item.Corpse do
   end
 
   def handle_cast(:tick, %{lifespan: 0} = state) do
+    Registry.unregister(Registry.Tick, self())
     # TODO send a message?
     GenServer.stop(self())
     {:noreply, state}
   end
+
   def handle_cast(:tick, %{lifespan: lifespan} = state) do
     {:noreply, %{state | lifespan: lifespan - 1}}
+  end
+
+  def terminate(reason, state) do
+    Registry.unregister(Registry.Tick, self)
+    Registry.unregister(Registry.Items, state.id)
+    reason
   end
 end
