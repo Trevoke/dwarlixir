@@ -60,6 +60,4 @@ defmodule World.Pathway do
     {:noreply, state}
   end
 
-#  def stop(from_id, to_id), do: GenServer.stop(via_tuple(from_id, to_id))
-
 end
