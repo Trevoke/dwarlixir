@@ -81,6 +81,6 @@ defmodule Mobs.Spawn do
   end
 
 
-  defp random_lifespan(:short), do: 30 + Enum.random(1..20)
+  defp random_lifespan(:short), do: 300 + Enum.random(1..200)
   defp random_lifespan(args), do: 1800 + Enum.random(1..7200)
 end

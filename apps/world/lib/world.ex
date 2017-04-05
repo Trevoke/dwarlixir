@@ -19,19 +19,23 @@ defmodule World do
     Supervisor.start_child(:world, new_loc(opts))
   end
 
-  def purge({module, id}, info, ignored_locations) do
+  def overview do
     World.LocationRegistry
     |> Registry.match(:_, :_)
-    |> Enum.map(fn({_pid, loc_id}) -> loc_id end)
-    |> Enum.reject(fn(loc_id) -> Enum.member?(ignored_locations, loc_id) end)
-    |> Enum.each(fn(loc_id) -> World.Location.depart(loc_id, {module, id}, info, "because it angered the gods.") end)
+    |> Enum.map(fn({_, id}) -> id end)
+    |> Enum.map(fn(x) ->
+      World.Location.look(x)
+    end)
+    |> IO.inspect
   end
 
   def new_loc(opts) do
     worker(World.Location, [opts], restart: :transient, id: opts.id)
   end
 
-  defp map_data do
+  defp map_data, do: World.Generator.call
+
+  defp map_data_old do
     [
       location("1", "The Broken Drum", "A tired bar that has seen too many fights",
         [
@@ -59,7 +63,7 @@ defmodule World do
     ]
   end
 
-  defp location(id, name, desc, pathways) do
+  def location(id, name, desc, pathways) do
     %World.Location{
       id: id,
       name: name,
@@ -68,7 +72,7 @@ defmodule World do
     }
   end
 
-  defp partial_pathway(from_id, name) do
+  def partial_pathway(from_id, name) do
     %{from_id: from_id, name: name}
   end
 end

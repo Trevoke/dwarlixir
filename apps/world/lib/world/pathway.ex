@@ -50,7 +50,7 @@ defmodule World.Pathway do
                     end
 
     tasks = [
-      Task.async(fn() -> Location.depart(from_id, {module, mob_id}, public_info, exit_name) end),
+      Task.async(fn() -> Location.depart(from_id, {{module, mob_id}, public_info, exit_name}) end),
       Task.async(fn() -> Location.arrive(to_id, {{module, mob_id}, public_info, incoming_name}) end),
       Task.async(fn() -> Kernel.apply(module, :set_location, [mob_id, to_id]) end)
     ]

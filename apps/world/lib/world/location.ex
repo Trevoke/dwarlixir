@@ -27,12 +27,8 @@ defmodule World.Location do
     GenServer.call(via_tuple(loc_id), :look)
   end
 
-  def move(current_location, {module, mob_id}, new_location, public_info) do
-    GenServer.cast(via_tuple(current_location), {:move, {module, mob_id}, new_location, public_info})
-  end
-
-  def depart(current_location, {module, mob_id}, public_info, towards) do
-    GenServer.call(via_tuple(current_location), {:depart, {module, mob_id}, public_info, towards})
+  def depart(current_location, {{module, mob_id}, public_info, to_id}) do
+    GenServer.call(via_tuple(current_location), {:depart, {{module, mob_id}, public_info, to_id}})
   end
 
   def arrive(new_location, {{module, id}, public_info, from}) do
@@ -41,6 +37,14 @@ defmodule World.Location do
 
   def place_item(loc_id, corpse_pid, corpse_info) do
     GenServer.cast(via_tuple(loc_id), {:place_item, corpse_pid, corpse_info})
+  end
+
+  def remove_item(loc_id, item) do
+    GenServer.cast(via_tuple(loc_id), {:remove_item, item})
+  end
+
+  def handle_cast({:remove_item, item}, state) do
+    {:noreply, %__MODULE__{state | corpses: Map.delete(state.corpses, item)}}
   end
 
   def send_notification(state, function) do
@@ -58,27 +62,12 @@ defmodule World.Location do
   end
 
   # TODO a hand will need to do this.
-  def handle_cast({:place_item, pid, public_info}, state) do
-    {:noreply, %Location{state | corpses: Map.put(state.corpses, pid, public_info)}}
+  def handle_cast({:place_item, item, public_info}, state) do
+    {:noreply, %Location{state | corpses: Map.put(state.corpses, item, public_info)}}
   end
 
   def handle_cast({:monitor_pathway, pathway_pid}, state) do
     Process.link(pathway_pid)
-    {:noreply, state}
-  end
-
-  def handle_cast({:move, {module, mob_id}, new_location, mob_public_info}, state) do
-    pathway_tuple = {state.id, new_location}
-    if Enum.member?(Map.keys(state.entities), {module, mob_id}) do
-      Pathway.move(pathway_tuple, {module, mob_id}, mob_public_info)
-    else
-      # Okay, locs and mobs get out of sync at some point.
-      # I could try to troubleshoot it
-      # Or I could just kill the fucking things
-      # Death to smoochie it is
-      Kernel.apply(module, :stop, [mob_id])
-      World.purge({module, mob_id}, mob_public_info, [state.id])
-    end
     {:noreply, state}
   end
 
@@ -99,22 +88,35 @@ defmodule World.Location do
     {:reply, seen_things, state}
   end
 
-  def handle_call({:depart, {module, mob_id}, public_info, to}, _from, state) do
-    send_notification(state, fn({module, id}) ->
-      Kernel.apply(
-        module,
-        :handle,
-        [id, {:depart, public_info, to}])
-    end)
-    {:reply, :ok, %Location{state | entities: Map.delete(state.entities, {module, mob_id})}}
+  def handle_call({:depart, {{module, mob_id}, public_info, to_id}}, _from, state) do
+    if Enum.member?(Map.keys(state.entities), {module, mob_id}) do
+      exit_name =
+        Registry.lookup(PathwayRegistry, {to_id, state.id}) ++ [{nil, "seemingly nowhere"}]
+        |> List.first
+        |> elem(1)
+
+      send_notification(
+        state,
+        fn({module, id}) ->
+          Kernel.apply(module, :handle, [id, {:depart, public_info, exit_name}])
+        end)
+      {:reply, :ok, %Location{state | entities: Map.delete(state.entities, {module, mob_id})}}
+    else
+      IO.inspect "{#{module}, #{mob_id}} is not in loc #{state.id} yet wants to go to #{to_id}."
+      {:reply, :not_in_location, state}
+    end
   end
 
   def handle_call({:arrive, {module, mob_id}, public_info, from_loc}, _from, state) do
+    incoming_exit_name =
+      Registry.lookup(PathwayRegistry, {from_loc, state.id}) ++ [{nil, "seemingly nowhere"}]
+      |> List.first
+      |> elem(1)
     send_notification(state, fn({module, id}) ->
       Kernel.apply(
         module,
         :handle,
-        [id, {:arrive, public_info, from_loc}])
+        [id, {:arrive, public_info, incoming_exit_name}])
     end)
     {:reply, :ok, %Location{state | entities: Map.put(state.entities, {module, mob_id}, public_info)}}
   end

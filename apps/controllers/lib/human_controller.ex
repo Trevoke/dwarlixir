@@ -59,9 +59,11 @@ defmodule Controllers.Human do
     write_line(state.socket, "Goodbye.")
     World.Location.depart(
       state.location_id,
-      {__MODULE__, state.user_id},
-      state,
-      "the real world"
+      {
+        {__MODULE__, state.user_id},
+        state,
+        "the real world"
+      }
     )
     :gen_tcp.close(state.socket)
     {:stop, :normal, state}
@@ -74,7 +76,7 @@ defmodule Controllers.Human do
     #{things_seen.description}
     #{Bunt.ANSI.format [:green, read_exits(things_seen.exits)]}
     #{read_entities(things_seen.living_things)}
-    #{Enum.join(things_seen.items, ", ")}
+    #{read_entities(things_seen.items)}
     """
     |> String.trim()
     state.socket

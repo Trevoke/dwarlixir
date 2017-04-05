@@ -28,7 +28,11 @@ defmodule Connections.Tcp do
     {:ok, username} = read_line(socket)
     case Controllers.Human.log_in(username, "password", socket) do
       {:ok, user_id} ->
-        Controllers.Human.join_room(user_id, "1")
+        room =
+          Registry.match(World.LocationRegistry, :_, :_)
+          |> Enum.map(fn({_, id}) -> id end)
+          |> Enum.random
+        Controllers.Human.join_room(user_id, room)
         loop_connection(socket, user_id)
       {:error, :username_taken} ->
         write_line(socket, "Username already online. Try another.\n")

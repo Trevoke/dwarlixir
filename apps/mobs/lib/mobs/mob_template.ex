@@ -63,10 +63,9 @@ defmodule Mobs.MobTemplate do
       end
 
       def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
-
         new_state = case Enum.random(1..1000) do
-                      x when x < 600 -> state
-                      x when x < 970 -> move_to_random_location(state)
+                      x when x < 400 -> state
+                      x when x < 980 -> move_to_random_location(state)
                       x when x <= 1000 -> try_to_mate(state.id) && state
                       #_ -> state
                     end
@@ -104,11 +103,17 @@ defmodule Mobs.MobTemplate do
 
       defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
         possible_exits = World.Pathway.exits(loc_id)
-        if Enum.any? possible_exits do
-          new_loc = Enum.random possible_exits
-          World.Location.move(loc_id, {__MODULE__, id}, new_loc, public_info(state))
+
+        with true <- Enum.any?(possible_exits),
+             info <- public_info(state),
+               new_loc_id <- Enum.random(possible_exits),
+               :ok <- World.Location.depart(loc_id, {{__MODULE__, id}, info, new_loc_id}),
+               :ok <- World.Location.arrive(new_loc_id, {{__MODULE__, id}, info, loc_id}) do
+          %__MODULE__{state | location_id: new_loc_id}
+        else
+          false -> state
+          :not_in_location -> state
         end
-        state
       end
 
       def try_to_mate(id) do
