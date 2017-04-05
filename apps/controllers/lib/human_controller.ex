@@ -121,7 +121,7 @@ defmodule Controllers.Human do
   end
 
   def terminate(reason, state) do
-    Registry.unregister(Registry.HumanControllers, state.id)
+    #Registry.unregister(Registry.HumanControllers, state.id)
     reason
   end
 
