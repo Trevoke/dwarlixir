@@ -2,8 +2,6 @@ defmodule Connections.Tcp do
 
   require Logger
 
-  @io Connections.TCP_IO
-
   @doc """
   Starts accepting connections on the given `port`.
   """
@@ -28,6 +26,9 @@ defmodule Connections.Tcp do
     {:ok, username} = read_line(socket)
     case Controllers.Human.log_in(username, "password", socket) do
       {:ok, user_id} ->
+        write_line(socket,
+          "Welcome! type 'look' to see what is in the room, 'spawn_more' to spawn more mobs at random spots in the MUD, and 'quit' to get out. Sorry, you can't move around yet.\n"
+        )
         room =
           Registry.match(World.LocationRegistry, :_, :_)
           |> Enum.map(fn({_, id}) -> id end)

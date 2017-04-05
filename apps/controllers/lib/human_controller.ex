@@ -55,8 +55,14 @@ defmodule Controllers.Human do
     {:noreply, state}
   end
 
+  def handle_cast({:input, "spawn_more"}, state) do
+    write_line(state.socket, "Spawning 40 more mobs.\n")
+    Mobs.Spawn.create_mobs(40)
+    {:noreply, state}
+  end
+
   def handle_cast({:input, "quit"}, state) do
-    write_line(state.socket, "Goodbye.")
+    write_line(state.socket, "Goodbye.\n")
     World.Location.depart(
       state.location_id,
       {

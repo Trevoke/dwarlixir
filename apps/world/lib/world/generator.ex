@@ -6,9 +6,9 @@ defmodule World.Generator do
     connect_all_islands(Enum.to_list(1..@node_count), make_edge_list()) # [{loc_id, to_id}]
     |> Enum.group_by(fn({from, _to}) -> from end) # %{loc_id => [{loc_id, to_id}]}
     |> Enum.map(fn({loc, pathways}) ->
-      World.location("#{loc}", "name", "desc",
+      World.location("#{loc}", "#{loc}", "room id #{loc}",
         Enum.map(Enum.uniq(pathways), fn({_to, from}) ->
-          World.partial_pathway("#{from}", "name")
+          World.partial_pathway("#{from}", "#{from}")
         end))
     end)
   end
