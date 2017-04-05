@@ -120,12 +120,17 @@ defmodule Controllers.Human do
     {:noreply, state}
   end
 
+  def terminate(reason, state) do
+    Registry.unregister(Registry.HumanControllers, state.id)
+    reason
+  end
+
   defp write_line(socket, line) do
     :gen_tcp.send(socket, line)
   end
 
   # TODO do I get a separate process for the user?
-  def public_info(state) do
+  defp public_info(state) do
     %{
       gender: :male,
       name: "a user"
