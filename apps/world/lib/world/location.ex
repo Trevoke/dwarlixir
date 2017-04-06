@@ -109,16 +109,22 @@ defmodule World.Location do
 
   def handle_call({:arrive, {module, mob_id}, public_info, from_loc}, _from, state) do
     incoming_exit_name =
-      Registry.lookup(PathwayRegistry, {from_loc, state.id}) ++ [{nil, "seemingly nowhere"}]
-      |> List.first
-      |> elem(1)
+      Enum.find(state.pathways, %{}, fn(pathway) ->
+        pathway.from_id == from_loc
+      end)
+      |> Map.get(:name, "seemingly nowhere")
+
     send_notification(state, fn({module, id}) ->
       Kernel.apply(
         module,
         :handle,
         [id, {:arrive, public_info, incoming_exit_name}])
     end)
-    {:reply, :ok, %Location{state | entities: Map.put(state.entities, {module, mob_id}, public_info)}}
+    {
+      :reply,
+      {:ok, state.pathways},
+      %Location{state | entities: Map.put(state.entities, {module, mob_id}, public_info)}
+    }
   end
 
   def handle_call({:mobs, filter}, _from, state) do

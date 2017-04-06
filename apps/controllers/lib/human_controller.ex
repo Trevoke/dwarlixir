@@ -1,11 +1,11 @@
 defmodule Controllers.Human do
   defstruct [
-    :socket, :user_id, :location_id
+    :socket, :id, :location_id, exits: []
   ]
   use GenServer
 
   def start_link(args \\ %__MODULE__{}) do
-    GenServer.start_link(__MODULE__, args, name: via_tuple(args.user_id))
+    GenServer.start_link(__MODULE__, args, name: via_tuple(args.id))
   end
 
   defp via_tuple(id) do
@@ -13,7 +13,8 @@ defmodule Controllers.Human do
   end
 
   def log_in(user_id, password, socket) do
-    with {:ok, pid} <- Controllers.Human.start_link(%__MODULE__{user_id: user_id, socket: socket}) do
+    user_id = String.trim user_id
+    with {:ok, pid} <- Controllers.Human.start_link(%__MODULE__{id: user_id, socket: socket}) do
       {:ok, user_id}
     else
       {:error, {:already_started, _pid}} -> {:error, :username_taken}
@@ -33,14 +34,20 @@ defmodule Controllers.Human do
   end
 
   def handle_cast({:join_room, loc_id}, state) do
-    World.Location.arrive(loc_id,
+    {:ok, exits} = World.Location.arrive(loc_id,
       {
-        {__MODULE__, state.user_id},
+        {__MODULE__, state.id},
         public_info(state),
         "seemingly nowhere"
       }
     )
-    {:noreply, %__MODULE__{state | location_id: loc_id}}
+    {
+      :noreply,
+      %__MODULE__{state |
+                  location_id: loc_id,
+                  exits: exits
+      }
+    }
   end
 
   def handle_cast({:arrive, info, from_loc}, state) do
@@ -66,7 +73,7 @@ defmodule Controllers.Human do
     World.Location.depart(
       state.location_id,
       {
-        {__MODULE__, state.user_id},
+        {__MODULE__, state.id},
         state,
         "the real world"
       }
@@ -111,8 +118,17 @@ defmodule Controllers.Human do
   end
 
   def handle_cast({:input, input}, state) do
-    write_line(state.socket, "Just received '#{input}'\n")
-    {:noreply, state}
+    cond do
+      pathway = Enum.find(state.exits, &(&1.name == input)) ->
+        with info <- public_info(state),
+             :ok <- World.Location.depart(state.location_id, {{__MODULE__, state.id}, info, pathway.from_id}),
+             {:ok, exits} <- World.Location.arrive(pathway.from_id, {{__MODULE__, state.id}, info, state.location_id}) do
+          {:noreply, %__MODULE__{state | location_id: input, exits: exits}}
+        end
+      true ->
+        write_line(state.socket, "Sorry, I don't understand that.")
+        {:noreply, state}
+    end
   end
 
   def handle_cast({:death, name}, state) do
@@ -133,7 +149,7 @@ defmodule Controllers.Human do
   defp public_info(state) do
     %{
       gender: :male,
-      name: "a user"
+      name: state.id
     }
   end
 

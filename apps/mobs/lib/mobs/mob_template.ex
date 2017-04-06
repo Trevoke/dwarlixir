@@ -108,7 +108,7 @@ defmodule Mobs.MobTemplate do
              info <- public_info(state),
                new_loc_id <- Enum.random(possible_exits),
                :ok <- World.Location.depart(loc_id, {{__MODULE__, id}, info, new_loc_id}),
-               :ok <- World.Location.arrive(new_loc_id, {{__MODULE__, id}, info, loc_id}) do
+             {:ok, exits} <- World.Location.arrive(new_loc_id, {{__MODULE__, id}, info, loc_id}) do
           %__MODULE__{state | location_id: new_loc_id}
         else
           false -> state
