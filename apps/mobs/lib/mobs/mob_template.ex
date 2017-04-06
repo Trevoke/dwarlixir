@@ -5,7 +5,7 @@ defmodule Mobs.MobTemplate do
       defstruct [
         :id, :location_id, :lifespan,
         :gender, :controller, :pregnant,
-        name: ""
+        name: "", exits: []
       ]
       use GenServer
 
@@ -17,8 +17,8 @@ defmodule Mobs.MobTemplate do
 
       def init(%__MODULE__{location_id: location_id} = state) do
         {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: state.id, timer_ref: nil})
-        World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state), "seemingly nowhere"})
-        {:ok, %__MODULE__{state | controller: pid}}
+        {:ok, exits} = World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state), "seemingly nowhere"})
+        {:ok, %__MODULE__{state | controller: pid, exits: exits}}
       end
 
       def tick(mob_id) do
@@ -65,7 +65,7 @@ defmodule Mobs.MobTemplate do
       def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
         new_state = case Enum.random(1..1000) do
                       x when x < 340 -> state
-                      x when x < 980 -> move_to_random_location(state)
+                      x when x < 990 -> move_to_random_location(state)
                       x when x <= 1000 -> try_to_mate(state.id) && state
                       #_ -> state
                     end
@@ -101,15 +101,17 @@ defmodule Mobs.MobTemplate do
         {:noreply, new_state}
       end
 
-      defp move_to_random_location(%__MODULE__{location_id: loc_id, id: id} = state) do
-        possible_exits = World.Pathway.exits(loc_id)
-
-        with true <- Enum.any?(possible_exits),
+      defp move_to_random_location(%__MODULE__{
+            location_id: loc_id,
+            id: id,
+            exits: exits
+                                   } = state) do
+        with true <- Enum.any?(exits),
              info <- public_info(state),
-               new_loc_id <- Enum.random(possible_exits),
+               %{from_id: new_loc_id} <- Enum.random(exits),
                :ok <- World.Location.depart(loc_id, {{__MODULE__, id}, info, new_loc_id}),
-             {:ok, exits} <- World.Location.arrive(new_loc_id, {{__MODULE__, id}, info, loc_id}) do
-          %__MODULE__{state | location_id: new_loc_id}
+             {:ok, new_exits} <- World.Location.arrive(new_loc_id, {{__MODULE__, id}, info, loc_id}) do
+          %__MODULE__{state | location_id: new_loc_id, exits: new_exits}
         else
           false -> state
           :not_in_location -> state

@@ -123,6 +123,7 @@ defmodule Controllers.Human do
         with info <- public_info(state),
              :ok <- World.Location.depart(state.location_id, {{__MODULE__, state.id}, info, pathway.from_id}),
              {:ok, exits} <- World.Location.arrive(pathway.from_id, {{__MODULE__, state.id}, info, state.location_id}) do
+          GenServer.cast(self(), {:input, "look"})
           {:noreply, %__MODULE__{state | location_id: input, exits: exits}}
         end
       true ->
