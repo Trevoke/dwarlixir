@@ -1,6 +1,6 @@
 defmodule World.Generator do
-  @node_count 60
-  @edge_count 45
+  @node_count 600
+  @edge_count 900
 
   def call do
     connect_all_islands(Enum.to_list(1..@node_count), make_edge_list()) # [{loc_id, to_id}]
@@ -44,7 +44,7 @@ defmodule World.Generator do
     else
       x = [node1 | visited]
       y = direct_edges(node1, edge_list)
-      Enum.flat_map(y, fn({_a, b}) -> traverse(b, edge_list, x) end)
+      List.foldl(y, x ,fn({_a, b}, acc) -> traverse(b, edge_list, acc) end)
     end
   end
 
