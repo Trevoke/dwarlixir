@@ -8,6 +8,11 @@ defmodule Controllers.Human do
     GenServer.start_link(__MODULE__, args, name: via_tuple(args.id))
   end
 
+  def init(args) do
+    Registry.update_value(Registry.HumanControllers, args.id, fn(_x) -> args.id end)
+    {:ok, args}
+  end
+
   defp via_tuple(id) do
     {:via, Registry, {Registry.HumanControllers, id}}
   end
@@ -38,16 +43,13 @@ defmodule Controllers.Human do
       {
         {__MODULE__, state.id},
         public_info(state),
-        "seemingly nowhere"
-      }
-    )
+        "seemingly nowhere"})
+
     {
       :noreply,
       %__MODULE__{state |
                   location_id: loc_id,
-                  exits: exits
-      }
-    }
+                  exits: exits}}
   end
 
   def handle_cast({:arrive, info, from_loc}, state) do
@@ -59,6 +61,38 @@ defmodule Controllers.Human do
   def handle_cast({:depart, info, to}, state) do
     write_line(state.socket,
     "#{info.name} is leaving #{to}.\n")
+    {:noreply, state}
+  end
+
+  def handle_cast({:input, "help"}, state) do
+    table = TableRex.quick_render!([
+      ["look", "see what is in the room"],
+      ["wall <message>", "talk to all other users"],
+      ["<exit number>", "move"],
+      ["who", "see who is logged in"],
+      ["help", "read this again"],
+      ["quit", "log out"],
+      ["spawn_more", "spawn more mobs"]
+    ], ["Command", "Description"])
+    write_line(state.socket, Bunt.ANSI.format [
+          :bright,
+          :blue,
+          """
+          Welcome, #{state.id}! Here are the available commands.
+          #{table}
+          """
+        ]
+        )
+    {:noreply, state}
+  end
+
+  def handle_cast({:input, "who"}, state) do
+    users =
+      Registry.HumanControllers
+      |> Registry.match(:_, :_)
+      |> Enum.map(&([elem(&1, 1)]))
+    output = TableRex.quick_render!(users, ["Users logged in"]) <> "\n"
+    write_line(state.socket, output)
     {:noreply, state}
   end
 
@@ -115,6 +149,19 @@ defmodule Controllers.Human do
       |> Enum.map(fn(x) -> x.name end)
       |> Enum.join(", ")
     "Exits: #{exit_text}."
+  end
+
+  def handle_cast({:input, "wall " <> message}, state) do
+    Registry.HumanControllers
+    |> Registry.match(:_, :_)
+    |> Enum.map(&(elem(&1, 0)))
+    |> Enum.each(fn(x) -> GenServer.cast(x, {:receive_wall, state.id, message}) end)
+    {:noreply, state}
+  end
+
+  def handle_cast({:receive_wall, from_user, message}, state) do
+    write_line(state.socket, Bunt.ANSI.format [:bright, :yellow, "#{from_user} says: #{message}\n"])
+    {:noreply, state}
   end
 
   def handle_cast({:input, input}, state) do

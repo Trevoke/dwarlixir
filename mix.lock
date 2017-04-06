@@ -5,4 +5,5 @@
   "ex2ms": {:hex, :ex2ms, "1.4.0", "e43b410888b45ba363ea6650db3736db3e455a0a412ec244ac633fede857bcb2", [:mix], []},
   "faker": {:hex, :faker, "0.7.0", "2c42deeac7be717173c78c77fb3edc749fb5d5e460e33d01fe592ae99acc2f0d", [:mix], []},
   "petick": {:hex, :petick, "0.0.1", "f29856643ba55f3fdb8b79ba672b85b9256780a9f4a85e545d9221efbe8f423b", [:mix], []},
+  "table_rex": {:hex, :table_rex, "0.10.0", "d981954370c00645c32ff7719c105db90ba6a9aa3e951c4d68eaeae3e0bfd40f", [:mix], []},
   "uuid": {:hex, :uuid, "1.1.6", "4927232f244e69c6e255643014c2d639dad5b8313dc2a6976ee1c3724e6ca60d", [:mix], []}}
