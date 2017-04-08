@@ -171,7 +171,7 @@ defmodule Controllers.Human do
              :ok <- World.Location.depart(state.location_id, {{__MODULE__, state.id}, info, pathway.from_id}),
              {:ok, exits} <- World.Location.arrive(pathway.from_id, {{__MODULE__, state.id}, info, state.location_id}) do
           GenServer.cast(self(), {:input, "look"})
-          {:noreply, %__MODULE__{state | location_id: input, exits: exits}}
+          {:noreply, %__MODULE__{state | location_id: pathway.from_id, exits: exits}}
         end
       true ->
         write_line(state.socket, "Sorry, I don't understand that.")
