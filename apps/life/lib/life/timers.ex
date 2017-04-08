@@ -38,7 +38,7 @@ defmodule Life.Timers do
 
   def send_heartbeat(_calling_pid) do
     Registry.dispatch(Registry.Tick, :subject_to_time, fn entries ->
-      for {pid, _} <- entries, do: GenServer.cast(pid, :tick)
+      for {proc_ref, _} <- entries, do: GenServer.cast(proc_ref, :tick)
     end)
   end
 
