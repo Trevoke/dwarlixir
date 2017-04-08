@@ -37,27 +37,4 @@ defmodule World.Pathway do
     |> Enum.map(fn({_from, id}) -> id end)
   end
 
-  def handle_cast(
-    {:move, {module, mob_id}, public_info},
-    %__MODULE__{from_id: from_id, to_id: to_id, name: exit_name} = state
-  ) do
-    opposite_path = Registry.lookup(PathwayRegistry, {from_id, to_id})
-    incoming_name = case length(opposite_path) do
-                      1 -> opposite_path
-                      |> List.first
-                      |> elem(1)
-                      _ -> "seemingly nowhere"
-                    end
-
-    tasks = [
-      Task.async(fn() -> Location.depart(from_id, {{module, mob_id}, public_info, exit_name}) end),
-      Task.async(fn() -> Location.arrive(to_id, {{module, mob_id}, public_info, incoming_name}) end),
-      Task.async(fn() -> Kernel.apply(module, :set_location, [mob_id, to_id]) end)
-    ]
-
-    [:ok, :ok, :ok] = Enum.map(tasks, &Task.await/1)
-
-    {:noreply, state}
-  end
-
 end
