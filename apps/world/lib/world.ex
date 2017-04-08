@@ -9,7 +9,7 @@ defmodule World do
 
   def init(%{spawn_locations: true}) do
     children =
-      map_data()
+      map_data_old()
       |> Enum.map(&(new_loc(&1)))
 
     supervise(children, strategy: :one_for_one)
