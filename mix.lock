@@ -1,9 +1,8 @@
 %{"bunt": {:hex, :bunt, "0.2.0", "951c6e801e8b1d2cbe58ebbd3e616a869061ddadcc4863d0a2182541acae9a38", [:mix], []},
   "credo": {:hex, :credo, "0.6.1", "a941e2591bd2bd2055dc92b810c174650b40b8290459c89a835af9d59ac4a5f8", [:mix], [{:bunt, "~> 0.2.0", [hex: :bunt, optional: false]}]},
-  "dialyxir": {:hex, :dialyxir, "0.4.4", "e93ff4affc5f9e78b70dc7bec7b07da44ae1ed3fef38e7113568dd30ad7b01d3", [:mix], []},
+  "dialyxir": {:hex, :dialyxir, "0.5.0", "5bc543f9c28ecd51b99cc1a685a3c2a1a93216990347f259406a910cf048d1d7", [:mix], []},
   "doc_first_formatter": {:hex, :doc_first_formatter, "0.0.2", "80beee4f52d7038927905e2c2585a21b425e83b02c6949a2d5931f086c991ff4", [:mix], []},
-  "ex2ms": {:hex, :ex2ms, "1.4.0", "e43b410888b45ba363ea6650db3736db3e455a0a412ec244ac633fede857bcb2", [:mix], []},
   "faker": {:hex, :faker, "0.7.0", "2c42deeac7be717173c78c77fb3edc749fb5d5e460e33d01fe592ae99acc2f0d", [:mix], []},
   "petick": {:hex, :petick, "0.0.1", "f29856643ba55f3fdb8b79ba672b85b9256780a9f4a85e545d9221efbe8f423b", [:mix], []},
   "table_rex": {:hex, :table_rex, "0.10.0", "d981954370c00645c32ff7719c105db90ba6a9aa3e951c4d68eaeae3e0bfd40f", [:mix], []},
-  "uuid": {:hex, :uuid, "1.1.6", "4927232f244e69c6e255643014c2d639dad5b8313dc2a6976ee1c3724e6ca60d", [:mix], []}}
+  "uuid": {:hex, :uuid, "1.1.7", "007afd58273bc0bc7f849c3bdc763e2f8124e83b957e515368c498b641f7ab69", [:mix], []}}
