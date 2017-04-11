@@ -7,7 +7,7 @@ defmodule Mobs.Application do
 
     # Define workers and child supervisors to be supervised
     children = [
-      supervisor(Registry, [:unique, Registry.Mobs], id: :mobs),
+      supervisor(Registry, [:unique, Mobs.Registry], id: :mobs),
       worker(Mobs.Spawn, [
             %{
               lifespan_type: Application.get_env(:mobs, :lifespan),

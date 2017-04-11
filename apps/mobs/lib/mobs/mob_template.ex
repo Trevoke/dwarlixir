@@ -13,26 +13,33 @@ defmodule Mobs.MobTemplate do
         GenServer.start_link(__MODULE__, args, name: via_mob(args.id), restart: :transient)
       end
 
-      defp via_mob(id), do: {:via, Registry, {Registry.Mobs, id}}
+      defp via_mob(id), do: {:via, Registry, {Mobs.Registry, id}}
 
       def init(%__MODULE__{location_id: location_id} = state) do
-        {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: state.id, timer_ref: nil})
         {:ok, exits} = World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state), "seemingly nowhere"})
-        {:ok, %__MODULE__{state | controller: pid, exits: exits}}
+        new_state = %__MODULE__{state | exits: exits}
+        {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: new_state.id, timer_ref: nil, mob_state: new_state})
+        {:ok, %__MODULE__{new_state | controller: pid}}
       end
 
-      def tick(mob_id) do
-        GenServer.cast(via_mob(mob_id), :tick)
+      def handle(id, message), do: GenServer.cast(via_mob(id), message)
+
+      def set_location(mob_id, loc_id, exits), do: GenServer.cast(via_mob(mob_id), {:set_location, loc_id, exits})
+      def handle_cast({:set_location, loc_id, exits}, state), do: {:noreply, %__MODULE__{state | location_id: loc_id, exits: exits}}
+
+      def depregnantize(id), do: GenServer.cast(via_mob(id), :depregnantize)
+      def handle_cast(:depregnantize, state), do: {:noreply, %__MODULE__{state | pregnant: :false}}
+
+      def decrement_lifespan(id), do: GenServer.cast(via_mob(id), :decrement_lifespan)
+
+      def handle_cast(:decrement_lifespan, %__MODULE__{lifespan: 1} = state) do
+        #TODO add event here?
+        Life.Reaper.claim({__MODULE__, state.id}, state.location_id, public_info(state))
+        {:noreply, %__MODULE__{state | lifespan: 0}}
       end
 
-      def handle(id, message) do
-        GenServer.cast(via_mob(id), message)
-      end
-
-      def set_location(mob_id, loc_id), do: GenServer.call(via_mob(mob_id), {:set_location, loc_id})
-
-      def handle_call({:set_location, loc_id}, _from, state) do
-        {:reply, :ok, %__MODULE__{state | location_id: loc_id}}
+      def handle_cast(:decrement_lifespan, state) do
+        {:noreply, %__MODULE__{state | lifespan: state.lifespan - 1}}
       end
 
       # This has made so many people laugh that I can't rename it.
@@ -49,36 +56,30 @@ defmodule Mobs.MobTemplate do
       end
 
 
-      def handle_cast(:tick, %__MODULE__{name: name, lifespan: 1} = state) do
-        #TODO add event
-        Life.Reaper.claim({__MODULE__, state.id}, state.location_id, public_info(state))
-        {:noreply, %__MODULE__{state | lifespan: 0}}
-      end
-
-      def handle_cast(:tick, %__MODULE__{lifespan: lifespan, pregnant: true} = state) do
-        Mobs.Spawn.birth(%{module: __MODULE__, location_id: state.location_id})
-        #TODO add event
-        new_state = %__MODULE__{state | lifespan: lifespan - 1, pregnant: false}
-        {:noreply, new_state}
-      end
-
-      def handle_cast(:tick, %__MODULE__{lifespan: lifespan} = state) do
-        new_state = case Enum.random(1..1000) do
-                      x when x < 340 -> state
-                      x when x < 990 -> move_to_random_location(state)
-                      x when x <= 1000 -> try_to_mate(state.id) && state
-                      #_ -> state
-                    end
-
-        {:noreply, %__MODULE__{new_state | lifespan: lifespan - 1}}
-      end
-
       def handle_cast(:pregnantize, state) do
+        GenServer.cast(state.controller, :pregnantize)
         new_state = %__MODULE__{state | pregnant: true}
         {:noreply, new_state}
       end
 
-      def handle_cast(:try_to_mate, state) do
+      # spec: state :: state
+      # TODO more like reproduction, return state and list of messages?
+      def move_to_random_location(%{location_id: loc_id, id: id, exits: exits} = state) do
+        with true <- Enum.any?(exits),
+             info <- public_info(state),
+               %{from_id: new_loc_id} <- Enum.random(exits),
+               :ok <- World.Location.depart(loc_id, {{__MODULE__, id}, info, new_loc_id}),
+             {:ok, new_exits} <- World.Location.arrive(new_loc_id, {{__MODULE__, id}, info, loc_id}) do
+          %{state | location_id: new_loc_id, exits: new_exits}
+        else
+          false -> state
+          :not_in_location -> state
+        end
+      end
+
+      # spec: state :: state
+      # TODO return list of messages out of here... ?
+      def try_to_mate(state) do
         looking_for = case state.gender do
                         :male -> :female
                         :female -> :male
@@ -96,30 +97,8 @@ defmodule Mobs.MobTemplate do
               possible_partners
             })
 
-        Enum.each(messages, fn({m, f, a}) -> Kernel.apply(m, f, a) end)
-
-        {:noreply, new_state}
-      end
-
-      defp move_to_random_location(%__MODULE__{
-            location_id: loc_id,
-            id: id,
-            exits: exits
-                                   } = state) do
-        with true <- Enum.any?(exits),
-             info <- public_info(state),
-               %{from_id: new_loc_id} <- Enum.random(exits),
-               :ok <- World.Location.depart(loc_id, {{__MODULE__, id}, info, new_loc_id}),
-             {:ok, new_exits} <- World.Location.arrive(new_loc_id, {{__MODULE__, id}, info, loc_id}) do
-          %__MODULE__{state | location_id: new_loc_id, exits: new_exits}
-        else
-          false -> state
-          :not_in_location -> state
-        end
-      end
-
-      def try_to_mate(id) do
-        GenServer.cast(via_mob(id), :try_to_mate)
+        Enum.each(messages, fn({m, f, arglist}) -> Kernel.apply(m, f, arglist) end)
+        new_state
       end
 
       def stop(mob_id) do
@@ -127,7 +106,7 @@ defmodule Mobs.MobTemplate do
       end
 
       def terminate(reason, state) do
-        Registry.unregister(Registry.Mobs, {__MODULE__, state.id})
+        Registry.unregister(Mobs.Registry, {__MODULE__, state.id})
         GenServer.stop(state.controller)
         reason
       end

@@ -13,9 +13,13 @@ defmodule Mobs.BirdTest do
     )
     female_bird = Mobs.Spawn.birth(
       %{module: Mobs.Bird, location_id: loc_id, lifespan: 1})
-    Mobs.Bird.tick(female_bird)
-    # TODO oh good, sleeping
     Process.sleep 20
+    fem_bird = GenServer.whereis({:via, Registry, {Mobs.Registry, female_bird}})
+
+    controller = :sys.get_state(fem_bird).controller
+    GenServer.cast(controller, :tick)
+    # TODO oh good, sleeping
+    Process.sleep 40
     contents = World.Location.look(loc_id)
     assert length(contents.items) == 1
   end
