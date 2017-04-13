@@ -5,20 +5,18 @@ defmodule Mobs.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
-    # Define workers and child supervisors to be supervised
     children = [
       supervisor(Registry, [:unique, Mobs.Registry], id: :mobs),
+      # TODO make it a supervisor?
       worker(Mobs.Spawn, [
             %{
               lifespan_type: Application.get_env(:mobs, :lifespan),
               spawn_on_start: Application.get_env(:mobs, :spawn_on_start),
-              next_id: 1
+              number_to_spawn: 40
              }
-          ], restart: :permanent)
+          ], restart: :temporary)
     ]
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Mobs.Supervisor]
     Supervisor.start_link(children, opts)
   end

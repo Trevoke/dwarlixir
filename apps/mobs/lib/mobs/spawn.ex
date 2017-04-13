@@ -10,16 +10,12 @@ defmodule Mobs.Spawn do
   end
 
   def init(%{spawn_on_start: true} = state) do
-    create_mobs(40)
+    create_mobs(state.number_to_spawn)
     {:ok, state}
   end
 
   def create_mobs(x \\ 40) do
     GenServer.cast(:mobs_spawn, {:create_mobs, x})
-  end
-
-  def birth(%{} = options) do
-    GenServer.call(:mobs_spawn, {:birth, options})
   end
 
   def handle_cast({:create_mobs, number_to_spawn}, state) do
@@ -28,28 +24,24 @@ defmodule Mobs.Spawn do
       |> Registry.match(:_, :_)
       |> Enum.map(fn({_pid, val}) -> val end)
     mob_types = [Mobs.Dwarf, Mobs.Bird]
-    Enum.each((state.next_id..state.next_id + number_to_spawn), fn id ->
+    Enum.each((1..number_to_spawn), fn _n ->
       initial_loc = Enum.random locs
       mob_type = Enum.random mob_types
-      give_birth(
-        id,
-        %{module: mob_type,
-        location_id: initial_loc},
-        state)
+      birth(%{module: mob_type, location_id: initial_loc})
     end)
-    {:noreply, %{state | next_id: state.next_id + number_to_spawn + 1}}
+    {:stop, :normal, state}
   end
 
 
-  def handle_call({:birth, options}, _from, state) do
-    {:ok, _} = give_birth(state.next_id, options, state)
-    {:reply, state.next_id, %{state | next_id: state.next_id + 1}}
+  def birth(options) do
+    {:ok, _} = give_birth(new_id(), options)
   end
 
-  defp give_birth(id, %{module: Mobs.Dwarf} = options, state) do
+  defp give_birth(id, %{module: Mobs.Dwarf} = options) do
+    state = %{lifespan_type: Application.get_env(:mobs, :lifespan)}
     gender = options[:gender] || Enum.random([:male, :female])
     lifespan = random_lifespan(state.lifespan_type)
-    Mobs.Dwarf.start_link(%Mobs.Dwarf{id: id,
+    Mobs.Dwarf.start(%Mobs.Dwarf{id: id,
                                       location_id: options.location_id,
                                       gender: gender,
                                       name: Faker.Name.name,
@@ -57,22 +49,24 @@ defmodule Mobs.Spawn do
   end
 
 
-  defp give_birth(id, %{module: Mobs.Bird} = options, state) do
+  defp give_birth(id, %{module: Mobs.Bird} = options) do
+    state = %{lifespan_type: Application.get_env(:mobs, :lifespan)}
     gender = options[:gender] || Enum.random([:male, :female])
     lifespan = options[:lifespan] || random_lifespan(state.lifespan_type)
-    Mobs.Bird.start_link(%Mobs.Bird{id: id,
+    Mobs.Bird.start(%Mobs.Bird{id: id,
                                     location_id: options.location_id,
                                     gender: gender,
                                     name: "a bird",
                                     lifespan: lifespan})
   end
 
-  defp give_birth(id, options, state) do
+  defp give_birth(id, options) do
+    state = %{lifespan_type: Application.get_env(:mobs, :lifespan)}
     gender = options[:gender] || Enum.random([:male, :female])
     lifespan = random_lifespan(state.lifespan_type)
     apply(
       options.module,
-      :start_link,
+      :start,
       [struct(options.module, [id: id,
                                location_id: options.location_id,
                                gender: gender,
@@ -80,7 +74,8 @@ defmodule Mobs.Spawn do
                                lifespan: lifespan])])
   end
 
+  defp new_id, do: UUID.uuid4(:hex)
 
   defp random_lifespan(:short), do: 300 + Enum.random(1..200)
-  defp random_lifespan(args), do: 1800 + Enum.random(1..7200)
+  defp random_lifespan(_args), do: 1800 + Enum.random(1..7200)
 end

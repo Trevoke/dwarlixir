@@ -23,7 +23,9 @@ defmodule Controllers.Mob do
   end
 
   def handle_cast(:tick, %{mob_state: %{lifespan: lifespan, pregnant: true}} = state) do
-    Mobs.Spawn.birth(%{module: state.module, location_id: state.mob_state.location_id})
+    Mobs.Spawn.birth(%{
+          module: state.module,
+          location_id: state.mob_state.location_id})
     #TODO add event
     new_state = %{state | mob_state: %{state.mob_state | lifespan: lifespan - 1, pregnant: false}}
     Kernel.apply(state.module, :depregnantize, [state.id])
