@@ -12,7 +12,7 @@ defmodule World.Application do
     children = [
       supervisor(Registry, [:unique, World.LocationRegistry], id: :location_registry),
       supervisor(Registry, [:unique, World.PathwayRegistry], id: :pathway_registry),
-      supervisor(World, [%{spawn_locations: Application.get_env(:world, :spawn_locations)}])
+      supervisor(World, [%{spawn_locations: Utils.Config.get(:world, :spawn_locations)}])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

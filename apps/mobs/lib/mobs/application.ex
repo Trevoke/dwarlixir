@@ -10,8 +10,8 @@ defmodule Mobs.Application do
       # TODO make it a supervisor?
       worker(Mobs.Spawn, [
             %{
-              lifespan_type: Application.get_env(:mobs, :lifespan),
-              spawn_on_start: Application.get_env(:mobs, :spawn_on_start),
+              lifespan_type: Utils.Config.get(:mobs, :lifespan),
+              spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start),
               number_to_spawn: 40
              }
           ], restart: :temporary)
