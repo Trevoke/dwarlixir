@@ -50,7 +50,7 @@ defmodule Controllers.Mob do
     {:noreply, %{state | mob_state: %{state.mob_state | pregnant: :true}}}
   end
 
-  def terminate(reason, state) do
+  def terminate(reason, _state) do
     Registry.unregister(Registry.Tick, :subject_to_time)
     #Registry.unregister(Controllers.Registry, via_tuple(state.id))
     reason

@@ -131,26 +131,6 @@ defmodule Controllers.Human do
     {:noreply, state}
   end
 
-  defp read_entities(entities) do
-    entities
-    |> Enum.group_by(&(&1))
-    |> Enum.map(fn({k, v}) -> {k, Enum.count(v)} end)
-    |> Enum.sort(fn({_n1, c1}, {_n2, c2}) -> c1 > c2 end)
-    |> Enum.map(fn
-      {name, 1} -> name
-      {name, count} -> "#{count} #{name}"
-    end)
-    |> Enum.join(", ")
-  end
-
-  defp read_exits(exits) do
-    exit_text =
-      exits
-      |> Enum.map(fn(x) -> x.name end)
-      |> Enum.join(", ")
-    "Exits: #{exit_text}."
-  end
-
   def handle_cast({:input, "wall " <> message}, state) do
     Registry.HumanControllers
     |> Registry.match(:_, :_)
@@ -184,7 +164,27 @@ defmodule Controllers.Human do
     {:noreply, state}
   end
 
-  def terminate(reason, state) do
+  defp read_entities(entities) do
+    entities
+    |> Enum.group_by(&(&1))
+    |> Enum.map(fn({k, v}) -> {k, Enum.count(v)} end)
+    |> Enum.sort(fn({_n1, c1}, {_n2, c2}) -> c1 > c2 end)
+    |> Enum.map(fn
+      {name, 1} -> name
+      {name, count} -> "#{count} #{name}"
+    end)
+    |> Enum.join(", ")
+  end
+
+  defp read_exits(exits) do
+    exit_text =
+      exits
+      |> Enum.map(fn(x) -> x.name end)
+      |> Enum.join(", ")
+    "Exits: #{exit_text}."
+  end
+
+  def terminate(reason, _state) do
     #Registry.unregister(Registry.HumanControllers, state.id)
     reason
   end
@@ -193,7 +193,6 @@ defmodule Controllers.Human do
     :gen_tcp.send(socket, line)
   end
 
-  # TODO do I get a separate process for the user?
   defp public_info(state) do
     %{
       gender: :male,
