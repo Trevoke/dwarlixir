@@ -3,7 +3,7 @@ defmodule Controllers.Mob do
 
   use GenServer
 
-  @tick 2000
+#  @tick 2000
 
   def start_link(args \\ %{}) do
     GenServer.start_link(__MODULE__, args)

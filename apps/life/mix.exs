@@ -38,6 +38,9 @@ defmodule Life.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
+      {:utils, in_umbrella: true},
+      {:world, in_umbrella: true},
+      {:item, in_umbrella: true},
       {:petick, "~> 0.0.1"},
       {:doc_first_formatter, "~> 0.0.2", only: [:test]}
     ]
