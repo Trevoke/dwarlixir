@@ -34,7 +34,12 @@ defmodule Mobs.Spawn do
 
 
   def birth(options) do
-    {:ok, _} = give_birth(new_id(), options)
+    mob_count = Enum.count World.Location.look(options.location_id).living_things
+    if mob_count < 150 do
+      {:ok, _} = give_birth(new_id(), options)
+    else
+      nil
+    end
   end
 
   defp give_birth(id, %{module: Mobs.Dwarf} = options) do

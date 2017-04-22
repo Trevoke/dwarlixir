@@ -27,9 +27,6 @@ defmodule Mobs.MobTemplate do
       def set_location(mob_id, loc_id, exits), do: GenServer.cast(via_mob(mob_id), {:set_location, loc_id, exits})
       def handle_cast({:set_location, loc_id, exits}, state), do: {:noreply, %__MODULE__{state | location_id: loc_id, exits: exits}}
 
-      def depregnantize(id), do: GenServer.cast(via_mob(id), :depregnantize)
-      def handle_cast(:depregnantize, state), do: {:noreply, %__MODULE__{state | pregnant: :false}}
-
       def decrement_lifespan(id), do: GenServer.cast(via_mob(id), :decrement_lifespan)
 
       def handle_cast(:decrement_lifespan, %__MODULE__{lifespan: 1} = state) do
@@ -42,24 +39,12 @@ defmodule Mobs.MobTemplate do
         {:noreply, %__MODULE__{state | lifespan: state.lifespan - 1}}
       end
 
-      # This has made so many people laugh that I can't rename it.
-      def pregnantize(mob_id) do
-        GenServer.cast(via_mob(mob_id), :pregnantize)
-      end
-
       def handle_cast({:arrive, info, from_loc}, state) do
         {:noreply, state}
       end
 
       def handle_cast({:depart, info, to_loc}, state) do
         {:noreply, state}
-      end
-
-
-      def handle_cast(:pregnantize, state) do
-        GenServer.cast(state.controller, :pregnantize)
-        new_state = %__MODULE__{state | pregnant: true}
-        {:noreply, new_state}
       end
 
       # spec: state :: state
@@ -99,6 +84,20 @@ defmodule Mobs.MobTemplate do
 
         Enum.each(messages, fn({m, f, arglist}) -> Kernel.apply(m, f, arglist) end)
         new_state
+      end
+
+      def depregnantize(id), do: GenServer.cast(via_mob(id), :depregnantize)
+      def handle_cast(:depregnantize, state), do: {:noreply, %__MODULE__{state | pregnant: :false}}
+
+      # This has made so many people laugh that I can't rename it.
+      def pregnantize(mob_id) do
+        GenServer.cast(via_mob(mob_id), :pregnantize)
+      end
+
+      def handle_cast(:pregnantize, state) do
+        GenServer.cast(state.controller, :pregnantize)
+        new_state = %__MODULE__{state | pregnant: true}
+        {:noreply, new_state}
       end
 
       def stop(mob_id) do
