@@ -21,6 +21,8 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
+config :logger, level: :info
+
 # Two options: :short and :long
 config :mobs, lifespan: :short
 
