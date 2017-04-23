@@ -16,6 +16,7 @@ defmodule Mobs.MobTemplate do
       defp via_mob(id), do: {:via, Registry, {Mobs.Registry, id}}
 
       def init(%__MODULE__{location_id: location_id} = state) do
+        Process.flag(:trap_exit, true)
         {:ok, exits} = World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state), "seemingly nowhere"})
         new_state = %__MODULE__{state | exits: exits}
         {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: new_state.id, timer_ref: nil, mob_state: new_state})
@@ -31,8 +32,7 @@ defmodule Mobs.MobTemplate do
 
       def handle_cast(:decrement_lifespan, %__MODULE__{lifespan: 1} = state) do
         #TODO add event here?
-        Life.Reaper.claim({__MODULE__, state.id}, state.location_id, public_info(state))
-        {:noreply, %__MODULE__{state | lifespan: 0}}
+        {:stop, :normal, %__MODULE__{state | lifespan: 0}}
       end
 
       def handle_cast(:decrement_lifespan, state) do
@@ -107,6 +107,8 @@ defmodule Mobs.MobTemplate do
       def terminate(reason, state) do
         Registry.unregister(Mobs.Registry, {__MODULE__, state.id})
         GenServer.stop(state.controller)
+        Life.Reaper.claim({__MODULE__, state.id}, state.location_id, public_info(state))
+        World.Location.depart(state.location_id, {{__MODULE__, state.id}, public_info(state), "to a better place"})
         reason
       end
 
@@ -117,6 +119,9 @@ defmodule Mobs.MobTemplate do
           pregnant: state.pregnant
         }
       end
+
+      #TODO this will be helpful
+      #defp leave("to nothingness"), do: ""
 
     end
   end
