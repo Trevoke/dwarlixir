@@ -27,6 +27,7 @@ defmodule World.Location do
     GenServer.call(via_tuple(loc_id), :look)
   end
 
+  # TODO to_id is weird if the mob dies or something. I need something better.
   def depart(current_location, {{module, mob_id}, public_info, to_id}) do
     GenServer.call(via_tuple(current_location), {:depart, {{module, mob_id}, public_info, to_id}})
   end
