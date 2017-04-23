@@ -30,7 +30,7 @@ defmodule World do
   end
 
   def new_loc(opts) do
-    worker(World.Location, [opts], restart: :transient, id: opts.id)
+    worker(World.Location, [opts], restart: :permanent, id: opts.id)
   end
 
   defp map_data, do: World.Generator.call
