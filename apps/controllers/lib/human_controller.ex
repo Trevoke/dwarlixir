@@ -60,7 +60,7 @@ defmodule Controllers.Human do
 
   def handle_cast({:depart, info, to}, state) do
     write_line(state.socket,
-    "#{info.name} is leaving #{to}.\n")
+    "#{info.name} is leaving towards #{to}.\n")
     {:noreply, state}
   end
 
