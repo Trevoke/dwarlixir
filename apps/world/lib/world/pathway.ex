@@ -19,6 +19,7 @@ defmodule World.Pathway do
   end
 
   def init(state) do
+    Process.flag(:trap_exit, true)
     tuple = {state.from_id, state.to_id}
     new_value = fn(_) -> state.name end
     PathwayRegistry
@@ -35,6 +36,11 @@ defmodule World.Pathway do
     |> Registry.match({location_id, :_}, :_)
     |> Enum.flat_map(fn({pid, _}) -> Registry.keys(PathwayRegistry, pid) end)
     |> Enum.map(fn({_from, id}) -> id end)
+  end
+
+  def terminate(reason, state) do
+    Registry.unregister(PathwayRegistry, {state.from_id, state.to_id})
+    reason
   end
 
 end

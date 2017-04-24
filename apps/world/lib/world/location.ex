@@ -16,6 +16,7 @@ defmodule World.Location do
   end
 
   def init(%__MODULE__{pathways: pathways, id: id} = state) do
+    Process.flag(:trap_exit, true)
     {id, nil} = Registry.update_value(LocationRegistry, id, fn(_x) -> id end)
     launch_known_pathways(id, pathways)
     check_for_other_pathways_to_monitor(id)
@@ -147,12 +148,14 @@ defmodule World.Location do
     |> Enum.each(fn(pid) -> Process.link(pid) end)
   end
 
-  # def stop(loc_id), do: GenServer.stop(via_tuple(loc_id))
-
-  # def terminate(reason, state) do
-  #   for %{from_id: from_id, name: name} <- state.pathways do
-  #     World.Pathway.stop(from_id, state.id)
-  #   end
-  # end
+  def terminate(reason, state) do
+    Registry.unregister(LocationRegistry, state.id)
+    for %{from_id: from_id, name: name} <- state.pathways do
+      World.Pathway.stop(from_id, state.id)
+    end
+    for {pid, _} <- state.corpses, do: GenServer.stop(pid)
+    for {{module, id}, _} <- state.entities, do: Kernel.apply(module, :stop, [id])
+    reason
+  end
 
 end
