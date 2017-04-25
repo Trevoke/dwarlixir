@@ -153,8 +153,8 @@ defmodule World.Location do
     for %{from_id: from_id, name: name} <- state.pathways do
       World.Pathway.stop(from_id, state.id)
     end
-    for {pid, _} <- state.corpses, do: GenServer.stop(pid)
-    for {{module, id}, _} <- state.entities, do: Kernel.apply(module, :stop, [id])
+    for {{_module, pid}, _info} <- state.corpses, do: GenServer.stop(pid)
+    for {{module, id}, _info} <- state.entities, do: Kernel.apply(module, :stop, [id])
     reason
   end
 
