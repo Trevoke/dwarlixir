@@ -9,7 +9,7 @@ defmodule Mobs.MobTemplate do
       ]
       use GenServer
 
-      def start(args) do
+      def start_link(args) do
         GenServer.start(__MODULE__, args, name: via_mob(args.id), restart: :transient)
       end
 

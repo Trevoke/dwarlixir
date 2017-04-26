@@ -23,7 +23,7 @@ defmodule Controllers.Mob do
   end
 
   def handle_cast(:tick, %{mob_state: %{lifespan: lifespan, pregnant: true}} = state) do
-    Mobs.Spawn.birth(%{
+    Mobs.Supervisor.birth(%{
           module: state.module,
           location_id: state.mob_state.location_id})
     #TODO add event

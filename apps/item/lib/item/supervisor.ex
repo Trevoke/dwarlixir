@@ -1,6 +1,5 @@
 defmodule Item.Supervisor do
   use Supervisor
-  import Supervisor.Spec
 
   def start_link(args \\ []) do
     Supervisor.start_link(__MODULE__, args, name: __MODULE__)

@@ -11,7 +11,7 @@ defmodule Mobs.BirdTest do
         description: "what's on the tin",
         pathways: []}
     )
-    {:ok, female_bird} = Mobs.Spawn.birth(
+    {:ok, female_bird} = Mobs.Supervisor.birth(
       %{module: Mobs.Bird, location_id: loc_id, lifespan: 1})
 
     controller = :sys.get_state(female_bird).controller
