@@ -36,14 +36,15 @@ defmodule Mobs.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:faker, "~> 0.7.0"},
       {:controllers, in_umbrella: true},
       {:world, in_umbrella: true},
       {:life, in_umbrella: true},
+      {:logger_file_backend, "~> 0.0.9"},
+      {:faker, "~> 0.7.0"},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
       {:credo, "~> 0.6.1", only: [:dev], runtime: false},
       {:doc_first_formatter, "~> 0.0.2", only: [:test]},
-      { :uuid, "~> 1.1" }
+      {:uuid, "~> 1.1"}
     ]
   end
 end
