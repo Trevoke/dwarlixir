@@ -16,6 +16,14 @@ import_config "../apps/*/config/config.exs"
 #       format: "$date $time [$level] $metadata$message\n",
 #       metadata: [:user_id]
 
-# config :logger,
-#   handle_otp_reports: true,
-#   handle_sasl_reports: true
+ config :logger,
+   handle_otp_reports: true,
+   handle_sasl_reports: true
+
+config :logger, level: :warn
+
+config :logger,
+  backends: [{LoggerFileBackend, :error_log}]
+
+config :logger, :error_log,
+  path: "var/log/error.log"

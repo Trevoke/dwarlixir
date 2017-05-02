@@ -21,13 +21,6 @@ use Mix.Config
 #     config :logger, level: :info
 #
 
-config :logger, level: :warn
-
-config :logger,
-  backends: [{LoggerFileBackend, :error_log}]
-
-config :logger, :error_log,
-  path: "var/log/error.log"
 
 # Two options: :short and :long
 config :mobs, lifespan: :short
