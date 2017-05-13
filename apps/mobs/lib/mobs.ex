@@ -11,8 +11,8 @@ defmodule Mobs do
     {:ok, state}
   end
 
-  def deny_births, do: GenServer.handle_cast(__MODULE__, :stop_births)
-  def allow_births, do: GenServer.handle_cast(__MODULE__, :allow_births)
+  def deny_births, do: GenServer.cast(__MODULE__, :stop_births)
+  def allow_births, do: GenServer.cast(__MODULE__, :allow_births)
 
   def handle_cast(:stop_births, state) do
     {:ok, %{state | allow_births: false}}

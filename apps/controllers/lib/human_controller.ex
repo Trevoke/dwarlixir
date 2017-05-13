@@ -98,7 +98,7 @@ defmodule Controllers.Human do
 
   def handle_cast({:input, "spawn_more"}, state) do
     write_line(state.socket, "Spawning 40 more mobs.\n")
-    Mobs.Supervisor.create_mobs(40)
+    Mobs.create_mobs(40)
     {:noreply, state}
   end
 

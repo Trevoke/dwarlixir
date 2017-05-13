@@ -8,7 +8,7 @@ defmodule World.Pathway do
                              name: String.t }
 
   use GenServer
-  alias World.{Location, PathwayRegistry}
+  alias World.PathwayRegistry
 
   def start_link(state) do
     GenServer.start_link(__MODULE__, state, name: via_tuple(state.from_id, state.to_id))
@@ -36,6 +36,10 @@ defmodule World.Pathway do
     |> Registry.match({location_id, :_}, :_)
     |> Enum.flat_map(fn({pid, _}) -> Registry.keys(PathwayRegistry, pid) end)
     |> Enum.map(fn({_from, id}) -> id end)
+  end
+
+  def stop(from_id, to_id) do
+    GenServer.stop(via_tuple(from_id, to_id))
   end
 
   def terminate(reason, state) do

@@ -150,7 +150,7 @@ defmodule World.Location do
 
   def terminate(reason, state) do
     Registry.unregister(LocationRegistry, state.id)
-    for %{from_id: from_id, name: name} <- state.pathways do
+    for %{from_id: from_id} <- state.pathways do
       World.Pathway.stop(from_id, state.id)
     end
     for {{_module, pid}, _info} <- state.corpses, do: GenServer.stop(pid)

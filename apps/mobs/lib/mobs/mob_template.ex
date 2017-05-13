@@ -19,6 +19,10 @@ defmodule Mobs.MobTemplate do
         Process.flag(:trap_exit, true)
         {:ok, exits} = World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state), "seemingly nowhere"})
         new_state = %__MODULE__{state | exits: exits}
+        # This start_link means that the mobs app depends on the controllers app
+        # and the controllers app depends on the mob app
+        # Which is right, which is wrong?
+        # Or should I create an app above both of those for spawning mobs?
         {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: new_state.id, timer_ref: nil, mob_state: new_state})
         {:ok, %__MODULE__{new_state | controller: pid}}
       end

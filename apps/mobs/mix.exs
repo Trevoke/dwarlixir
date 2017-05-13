@@ -33,7 +33,7 @@ defmodule Mobs.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:controllers, in_umbrella: true},
+      # {:controllers, in_umbrella: true},
       {:world, in_umbrella: true},
       {:life, in_umbrella: true},
       {:faker, "~> 0.7.0"},
