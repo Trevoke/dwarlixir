@@ -39,7 +39,7 @@ config :logger,
   backends: [{LoggerFileBackend, :error_log}]
 
 config :logger, :error_log,
-  path: "var/log/error.log"
+  path: "#{Path.expand(".")}/var/log/error.log"
 
 config :sasl,
   sasl_error_logger: {:file, 'var/log/sasl_errors.log'},
