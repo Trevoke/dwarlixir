@@ -1,6 +1,6 @@
 defmodule World.Generator do
-  @node_count 600
-  @edge_count 900
+  @node_count 3000
+  @edge_count 5000
 
   def call do
     connect_all_islands(Enum.to_list(1..@node_count), make_edge_list()) # [{loc_id, to_id}]
@@ -15,13 +15,8 @@ defmodule World.Generator do
 
   def random_node, do: Enum.random(1..@node_count)
 
-  def edge_pair(a, b) do
-    with true <- a != b do
-      [{a, b}, {b, a}]
-    else
-      false -> []
-    end
-  end
+  def edge_pair(a, b) when a != b, do: [{a, b}, {b, a}]
+  def edge_pair(_a, _b), do: []
 
   def make_edge_list() do
     1..@edge_count
