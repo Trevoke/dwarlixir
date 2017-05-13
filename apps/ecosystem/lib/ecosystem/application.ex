@@ -8,6 +8,8 @@ defmodule Ecosystem.Application do
   def start(_type, _args) do
     import Supervisor.Spec, warn: false
 
+    GenServer.stop(:alarm_handler)
+
     children = [
       worker(Ecosystem, [%{}], restart: :permanent)
     ]

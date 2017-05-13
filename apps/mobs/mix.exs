@@ -19,10 +19,7 @@ defmodule Mobs.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     [extra_applications: [:logger],
-     mod: {
-       Mobs.Application,
-       [%{spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start)}]
-     }]
+     mod: {Mobs.Application,[]}]
   end
 
   # Dependencies can be Hex packages:

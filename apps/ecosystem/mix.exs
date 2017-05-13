@@ -38,7 +38,8 @@ defmodule Ecosystem.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:mobs, in_umbrella: true}
+      {:mobs, in_umbrella: true},
+      {:petick, "~> 0.0.1"}
     ]
   end
 end
