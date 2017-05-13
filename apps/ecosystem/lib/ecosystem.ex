@@ -37,6 +37,7 @@ defmodule Ecosystem do
     Mobs.deny_births
   end
 
+  # TODO if the percentage is never more than 30, oops.
   def ecosystem_sanity(percentage) when percentage > 30 do
     Mobs.allow_births
   end

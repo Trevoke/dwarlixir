@@ -22,8 +22,7 @@ defmodule Dwarlixir.Mixfile do
   # and cannot be accessed from applications inside the apps folder
   defp deps do
     [
-      {:distillery, "~> 1.0"},
-      {:logger_file_backend, "~> 0.0.9"}
+      {:distillery, "~> 1.0"}
     ]
   end
 end

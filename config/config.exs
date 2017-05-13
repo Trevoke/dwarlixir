@@ -15,21 +15,3 @@ import_config "../apps/*/config/config.exs"
 #       level: :info,
 #       format: "$date $time [$level] $metadata$message\n",
 #       metadata: [:user_id]
-
- config :logger,
-   handle_otp_reports: true,
-   handle_sasl_reports: true
-
-config :logger, level: :warn
-
-config :logger,
-  backends: [{LoggerFileBackend, :error_log}]
-
-config :logger, :error_log,
-  path: "var/log/error.log"
-
-config :sasl,
-  sasl_error_logger: {:file, 'var/log/sasl_errors.log'},
-  error_logger_mf_dir: 'var/log/',
-  error_logger_mf_maxbytes: 1000,
-  error_logger_mf_maxfiles: 10
