@@ -41,15 +41,15 @@ defmodule Mobs do
   end
 
   def birth(options) do
-    GenServer.cast(__MODULE__, {:birth, options})
+    GenServer.call(__MODULE__, {:birth, options})
   end
 
-  def handle_cast({:birth, options}, %{allow_births: allow_births} = state) when allow_births == true do
-    {:ok, _} = give_birth(new_id(), options)
-    {:noreply, state}
+  def handle_call({:birth, options}, _from, %{allow_births: allow_births} = state) when allow_births == true do
+    {:ok, pid} = give_birth(new_id(), options)
+    {:reply, {:ok, pid}, state}
   end
-  def handle_cast({:birth, options}, %{allow_births: allow_births} = state) when allow_births == false do
-    {:noreply, state}
+  def handle_call({:birth, options}, _from, %{allow_births: allow_births} = state) when allow_births == false do
+    {:reply, {:error, :no_births}, state}
   end
 
   defp give_birth(id, %{module: Mobs.Dwarf} = options) do
