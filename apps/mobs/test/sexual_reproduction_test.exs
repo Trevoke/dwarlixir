@@ -4,7 +4,8 @@ defmodule Mobs.SexualReproductionTest do
 
   test "female reproduces with male, same species" do
     male_bird = %{{Mobs.Bird, 2} => %{id: 2, gender: :male}}
-    state = %{id: 1, gender: :female}
+    # TODO worth testing with pregnant: true?
+    state = %{id: 1, gender: :female, pregnant: false}
     {:ok, {_new_state, messages}} = Mobs.SexualReproduction.call(
       {state, []},
       {
@@ -18,7 +19,7 @@ defmodule Mobs.SexualReproductionTest do
   end
 
   test "male reproduces with female, same species" do
-    female_bird = %{{Mobs.Bird, 2} => %{id: 2, gender: :female}}
+    female_bird = %{{Mobs.Bird, 2} => %{id: 2, gender: :female, pregnant: false}}
     state = %{id: 1, gender: :male}
     {:ok, {_new_state, messages}} = Mobs.SexualReproduction.call(
       {state, []},
