@@ -5,7 +5,9 @@ defmodule Mobs.SexualReproduction do
       Enum.filter(
         entities_around,
         fn({{their_species, _}, their_stats}) ->
-          their_species == my_species && their_stats.gender == :female
+          their_species == my_species &&
+            their_stats.gender == :female &&
+            their_stats.pregnant == false
         end
       )
 

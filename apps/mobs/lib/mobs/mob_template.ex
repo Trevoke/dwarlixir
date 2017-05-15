@@ -3,9 +3,8 @@ defmodule Mobs.MobTemplate do
   defmacro __using__(_) do
     quote do
       defstruct [
-        :id, :location_id, :lifespan,
-        :gender, :controller, :pregnant,
-        name: "", exits: []
+        :id, :location_id, :lifespan, :gender, :controller, :pregnant,
+        :ticks_to_birth, name: "", exits: []
       ]
       use GenServer
 
@@ -66,9 +65,11 @@ defmodule Mobs.MobTemplate do
         end
       end
 
+      def try_to_mate(%{pregnant: true} = state), do: state
+
       # spec: state :: state
       # TODO return list of messages out of here... ?
-      def try_to_mate(state) do
+      def try_to_mate(%{pregnant: false} = state) do
         looking_for = case state.gender do
                         :male -> :female
                         :female -> :male
@@ -91,7 +92,7 @@ defmodule Mobs.MobTemplate do
       end
 
       def depregnantize(id), do: GenServer.cast(via_mob(id), :depregnantize)
-      def handle_cast(:depregnantize, state), do: {:noreply, %__MODULE__{state | pregnant: :false}}
+      def handle_cast(:depregnantize, state), do: {:noreply, %__MODULE__{state | pregnant: :false, ticks_to_birth: nil}}
 
       # This has made so many people laugh that I can't rename it.
       def pregnantize(mob_id) do
@@ -99,8 +100,8 @@ defmodule Mobs.MobTemplate do
       end
 
       def handle_cast(:pregnantize, state) do
-        GenServer.cast(state.controller, :pregnantize)
-        new_state = %__MODULE__{state | pregnant: true}
+        GenServer.cast(state.controller, {:pregnantize, 100})
+        new_state = %__MODULE__{state | pregnant: true, ticks_to_birth: 100}
         {:noreply, new_state}
       end
 

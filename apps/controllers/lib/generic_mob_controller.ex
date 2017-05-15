@@ -22,7 +22,11 @@ defmodule Controllers.Mob do
     {:noreply, %{state | mob_state: %{state.mob_state | lifespan: 0}}}
   end
 
-  def handle_cast(:tick, %{mob_state: %{lifespan: lifespan, pregnant: true}} = state) do
+  def handle_cast(:tick, %{mob_state: %{
+                              lifespan: lifespan,
+                              pregnant: true,
+                              ticks_to_birth: 1}
+                          } = state) do
     Mobs.birth(%{
           module: state.module,
           location_id: state.mob_state.location_id})
@@ -33,21 +37,36 @@ defmodule Controllers.Mob do
     {:noreply, new_state}
   end
 
-  def handle_cast(:tick, %{mob_state: %{lifespan: lifespan}} = state) do
-    new_mob_state = case Enum.random(1..10000) do
-                      x when x < 9000 -> state.mob_state
-                      x when x < 9950 -> Kernel.apply(state.module, :move_to_random_location, [state.mob_state])
-                      x when x <= 10000 -> Kernel.apply(state.module, :try_to_mate, [state.mob_state])
-                      _ -> state.mob_state
-                end
-
+  def handle_cast(:tick, %{mob_state: %{
+                              lifespan: lifespan,
+                              pregnant: true,
+                              ticks_to_birth: ticks_to_birth}} = state) do
+    new_mob_state = tick(state)
     Kernel.apply(state.module, :decrement_lifespan, [state.id])
-    Kernel.apply(state.module, :set_location, [state.id, new_mob_state.location_id, new_mob_state.exits])
+    #Kernel.apply(state.module, :set_location, [state.id, new_mob_state.location_id, new_mob_state.exits])
+    {:noreply, %{state | mob_state: %{new_mob_state | lifespan: lifespan - 1,
+                                     ticks_to_birth: ticks_to_birth - 1}}}
+  end
+
+  def tick(state) do
+    case Enum.random(1..10000) do
+      x when x < 9000 -> state.mob_state
+      x when x < 9950 -> Kernel.apply(state.module, :move_to_random_location, [state.mob_state])
+      x when x <= 10000 -> Kernel.apply(state.module, :try_to_mate, [state.mob_state])
+      _ -> state.mob_state
+    end
+  end
+
+  def handle_cast(:tick, %{mob_state: %{lifespan: lifespan}} = state) do
+    new_mob_state = tick(state)
+    Kernel.apply(state.module, :decrement_lifespan, [state.id])
+    #Kernel.apply(state.module, :set_location, [state.id, new_mob_state.location_id, new_mob_state.exits])
     {:noreply, %{state | mob_state: %{new_mob_state | lifespan: lifespan - 1}}}
   end
 
-  def handle_cast(:pregnantize, state) do
-    {:noreply, %{state | mob_state: %{state.mob_state | pregnant: :true}}}
+  def handle_cast({:pregnantize, ticks_to_birth}, state) do
+    {:noreply, %{state | mob_state: %{state.mob_state | pregnant: :true,
+                                     ticks_to_birth: ticks_to_birth}}}
   end
 
   def terminate(reason, _state) do
