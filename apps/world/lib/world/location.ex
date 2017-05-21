@@ -24,6 +24,7 @@ defmodule World.Location do
   end
 
   # TODO will I need to create an eye for this?
+  # Or will this need to be just.. In ets?
   def look(loc_id) do
     GenServer.call(via_tuple(loc_id), :look)
   end
@@ -69,8 +70,9 @@ defmodule World.Location do
   end
 
   # TODO a hand will need to do this.
-  def handle_cast({:place_item, item, public_info}, state) do
-    {:noreply, %Location{state | items: Map.put(state.items, item, public_info)}}
+  def handle_cast({:place_item, {module, id}, public_info}, state) do
+    Process.link(GenServer.whereis Item.Corpse.via_tuple(id))
+    {:noreply, %Location{state | items: Map.put(state.items, {module, id}, public_info)}}
   end
 
   def handle_cast({:announce_death, {{module, mob_id}, public_info}}, state) do
@@ -115,6 +117,8 @@ defmodule World.Location do
         |> List.first
         |> elem(1)
 
+      Process.unlink(GenServer.whereis Kernel.apply(module, :via_tuple, [mob_id]))
+
       send_notification(
         state.entities,
         fn({module, id}) ->
@@ -133,6 +137,8 @@ defmodule World.Location do
         pathway.from_id == from_loc
       end)
       |> Map.get(:name, "seemingly nowhere")
+
+    Process.link(GenServer.whereis Kernel.apply(module, :via_tuple, [mob_id]))
 
     send_notification(
       state.entities,
@@ -166,12 +172,6 @@ defmodule World.Location do
   end
 
   def terminate(reason, state) do
-    for %{from_id: from_id} <- state.pathways do
-      World.Pathway.stop(from_id, state.id)
-    end
-    for {{module, id}, _info} <- state.items, do: Kernel.apply(module, :stop, [id])
-    for {{module, id}, _info} <- state.entities, do: Kernel.apply(module, :stop, [id])
-
     Registry.unregister(LocationRegistry, state.id)
     reason
   end

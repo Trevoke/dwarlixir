@@ -13,7 +13,7 @@ defmodule Controllers.Human do
     {:ok, args}
   end
 
-  defp via_tuple(id) do
+  def via_tuple(id) do
     {:via, Registry, {Registry.HumanControllers, id}}
   end
 

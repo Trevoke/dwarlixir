@@ -9,10 +9,10 @@ defmodule Mobs.MobTemplate do
       use GenServer
 
       def start_link(args) do
-        GenServer.start(__MODULE__, args, name: via_mob(args.id), restart: :transient)
+        GenServer.start(__MODULE__, args, name: via_tuple(args.id), restart: :transient)
       end
 
-      defp via_mob(id), do: {:via, Registry, {Mobs.Registry, id}}
+      def via_tuple(id), do: {:via, Registry, {Mobs.Registry, id}}
 
       def init(%__MODULE__{location_id: location_id} = state) do
         Process.flag(:trap_exit, true)
@@ -22,10 +22,10 @@ defmodule Mobs.MobTemplate do
         {:ok, %__MODULE__{new_state | controller: pid}}
       end
 
-      def set_location(mob_id, loc_id, exits), do: GenServer.cast(via_mob(mob_id), {:set_location, loc_id, exits})
+      def set_location(mob_id, loc_id, exits), do: GenServer.cast(via_tuple(mob_id), {:set_location, loc_id, exits})
       def handle_cast({:set_location, loc_id, exits}, state), do: {:noreply, %__MODULE__{state | location_id: loc_id, exits: exits}}
 
-      def decrement_lifespan(id), do: GenServer.cast(via_mob(id), :decrement_lifespan)
+      def decrement_lifespan(id), do: GenServer.cast(via_tuple(id), :decrement_lifespan)
 
       def handle_cast(:decrement_lifespan, %__MODULE__{lifespan: 1} = state) do
         #TODO add event here?
@@ -91,12 +91,12 @@ defmodule Mobs.MobTemplate do
 
       end
 
-      def depregnantize(id), do: GenServer.cast(via_mob(id), :depregnantize)
+      def depregnantize(id), do: GenServer.cast(via_tuple(id), :depregnantize)
       def handle_cast(:depregnantize, state), do: {:noreply, %__MODULE__{state | pregnant: :false, ticks_to_birth: nil}}
 
       # This has made so many people laugh that I can't rename it.
       def pregnantize(mob_id) do
-        GenServer.cast(via_mob(mob_id), :pregnantize)
+        GenServer.cast(via_tuple(mob_id), :pregnantize)
       end
 
       def handle_cast(:pregnantize, state) do
@@ -105,14 +105,14 @@ defmodule Mobs.MobTemplate do
         {:noreply, new_state}
       end
 
-      def handle(id, message), do: GenServer.cast(via_mob(id), message)
+      def handle(id, message), do: GenServer.cast(via_tuple(id), message)
 
       # Yeah so this should actually *do* something
       # But for now it'll help avoid mailboxes getting full.
       def handle_cast(_msg, state), do: {:noreply, state}
 
       def stop(mob_id) do
-        GenServer.stop(via_mob(mob_id))
+        GenServer.stop(via_tuple(mob_id))
       end
 
       def terminate(reason, state) do
