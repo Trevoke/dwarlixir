@@ -11,7 +11,7 @@ defmodule World.Location do
     GenServer.start_link(__MODULE__, args, name: via_tuple(args.id))
   end
 
-  defp via_tuple(id) do
+  def via_tuple(id) do
     {:via, Registry, {LocationRegistry, id}}
   end
 
@@ -65,7 +65,7 @@ defmodule World.Location do
   end
 
   def handle_cast({:remove_item, item}, state) do
-    {:noreply, %__MODULE__{state | item: Map.delete(state.items, item)}}
+    {:noreply, %__MODULE__{state | items: Map.delete(state.items, item)}}
   end
 
   # TODO a hand will need to do this.
