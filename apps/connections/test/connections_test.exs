@@ -3,9 +3,10 @@ defmodule ConnectionsTest do
   doctest Connections
 
   test "A user can log in and quit" do
+    loc_id = UUID.uuid4(:hex)
     {:ok, _} = World.Location.start_link(
       %World.Location{
-        id: "1",
+        id: loc_id,
         name: "center of the universe",
         description: "what's on the tin",
         pathways: []}
