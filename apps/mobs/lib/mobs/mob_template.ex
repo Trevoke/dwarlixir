@@ -116,11 +116,11 @@ defmodule Mobs.MobTemplate do
       end
 
       def terminate(reason, state) do
-        Registry.unregister(Mobs.Registry, {__MODULE__, state.id})
         GenServer.stop(state.controller)
         # TODO this needs to be a more elegant "queue message to everyone in the room that the mob died"
         World.Location.announce_death(state.location_id, {{__MODULE__, state.id}, public_info(state)})
         Life.Reaper.claim({__MODULE__, state.id}, state.location_id, public_info(state))
+        Registry.unregister(Mobs.Registry, {__MODULE__, state.id})
         reason
       end
 \

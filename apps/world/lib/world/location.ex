@@ -1,6 +1,6 @@
 defmodule World.Location do
   defstruct [
-    :id, :name, :description, :pathways, corpses: %{},
+    :id, :name, :description, :pathways, items: %{},
     entities: %{}
   ]
   use GenServer
@@ -42,8 +42,8 @@ defmodule World.Location do
     GenServer.call(via_tuple(new_location), {:arrive, {module, id}, public_info, from})
   end
 
-  def place_item(loc_id, corpse_pid, corpse_info) do
-    GenServer.cast(via_tuple(loc_id), {:place_item, corpse_pid, corpse_info})
+  def place_item(loc_id, item_ref, item_info) do
+    GenServer.cast(via_tuple(loc_id), {:place_item, item_ref, item_info})
   end
 
   def remove_item(loc_id, item) do
@@ -65,12 +65,12 @@ defmodule World.Location do
   end
 
   def handle_cast({:remove_item, item}, state) do
-    {:noreply, %__MODULE__{state | corpses: Map.delete(state.corpses, item)}}
+    {:noreply, %__MODULE__{state | item: Map.delete(state.items, item)}}
   end
 
   # TODO a hand will need to do this.
   def handle_cast({:place_item, item, public_info}, state) do
-    {:noreply, %Location{state | corpses: Map.put(state.corpses, item, public_info)}}
+    {:noreply, %Location{state | items: Map.put(state.items, item, public_info)}}
   end
 
   def handle_cast({:announce_death, {{module, mob_id}, public_info}}, state) do
@@ -94,7 +94,9 @@ defmodule World.Location do
       state.entities
       |> Map.values
       |> Enum.map(&(&1.name))
-    items = state.corpses
+    # TODO get string description from public info?
+    # Maybe define it in Item.Corpse.init ?
+    items = state.items
       |> Map.values
       |> Enum.map(&("the corpse of #{&1.name}"))
     seen_things = %{
@@ -164,12 +166,13 @@ defmodule World.Location do
   end
 
   def terminate(reason, state) do
-    Registry.unregister(LocationRegistry, state.id)
     for %{from_id: from_id} <- state.pathways do
       World.Pathway.stop(from_id, state.id)
     end
-    for {{_module, pid}, _info} <- state.corpses, do: GenServer.stop(pid)
+    for {{module, id}, _info} <- state.items, do: Kernel.apply(module, :stop, [id])
     for {{module, id}, _info} <- state.entities, do: Kernel.apply(module, :stop, [id])
+
+    Registry.unregister(LocationRegistry, state.id)
     reason
   end
 

@@ -13,7 +13,6 @@ defmodule Item.Corpse do
   end
 
   def handle_cast(:tick, %{lifespan: 0} = state) do
-    World.Location.remove_item(state.location_id, {__MODULE__, self()})
     # TODO send a message?
     GenServer.stop(self())
     {:noreply, state}
@@ -24,6 +23,7 @@ defmodule Item.Corpse do
   end
 
   def terminate(reason, state) do
+    World.Location.remove_item(state.location_id, {__MODULE__, state.id})
     Registry.unregister(Registry.Tick, self())
     Registry.unregister(Registry.Items, state.id)
     reason

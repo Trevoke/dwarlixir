@@ -17,6 +17,6 @@ defmodule Item.Supervisor do
       [id: public_info.id]
     )
     {:ok, pid} = Supervisor.start_child(__MODULE__, corpse)
-    World.Location.place_item(loc_id, {Item.Corpse, pid}, public_info)
+    World.Location.place_item(loc_id, {Item.Corpse, public_info.id}, public_info)
   end
 end
