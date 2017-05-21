@@ -27,10 +27,6 @@ defmodule World.Pathway do
     {:ok, state}
   end
 
-  def move({from, to}, {module, mob_id}, public_info) do
-    GenServer.cast(via_tuple(from, to), {:move, {module, mob_id}, public_info})
-  end
-
   def exits(location_id) do
     PathwayRegistry
     |> Registry.match({location_id, :_}, :_)

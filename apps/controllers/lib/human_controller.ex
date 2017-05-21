@@ -159,8 +159,8 @@ defmodule Controllers.Human do
     end
   end
 
-  def handle_cast({:death, name}, state) do
-    write_line(state.socket, "#{name} has just died.")
+  def handle_cast({:death, info}, state) do
+    write_line(state.socket, "#{info.name} has just died.")
     {:noreply, state}
   end
 

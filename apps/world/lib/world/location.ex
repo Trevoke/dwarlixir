@@ -28,11 +28,16 @@ defmodule World.Location do
     GenServer.call(via_tuple(loc_id), :look)
   end
 
-  # TODO to_id is weird if the mob dies or something. I need something better.
+  # TODO to_id - always a good idea?
   def depart(current_location, {{module, mob_id}, public_info, to_id}) do
     GenServer.call(via_tuple(current_location), {:depart, {{module, mob_id}, public_info, to_id}})
   end
 
+  def announce_death(current_location, {{module, mob_id}, public_info}) do
+    GenServer.cast(via_tuple(current_location), {:announce_death, {{module, mob_id}, public_info}})
+  end
+
+  # TODO from can also be from birth, I think?
   def arrive(new_location, {{module, id}, public_info, from}) do
     GenServer.call(via_tuple(new_location), {:arrive, {module, id}, public_info, from})
   end
@@ -45,12 +50,8 @@ defmodule World.Location do
     GenServer.cast(via_tuple(loc_id), {:remove_item, item})
   end
 
-  def handle_cast({:remove_item, item}, state) do
-    {:noreply, %__MODULE__{state | corpses: Map.delete(state.corpses, item)}}
-  end
-
-  def send_notification(state, function) do
-    state.entities
+  def send_notification(entities, function) do
+    entities
     |> Map.keys
     |> Enum.each(function)
   end
@@ -63,9 +64,24 @@ defmodule World.Location do
     mobs(loc_id, fn(_x) -> true end)
   end
 
+  def handle_cast({:remove_item, item}, state) do
+    {:noreply, %__MODULE__{state | corpses: Map.delete(state.corpses, item)}}
+  end
+
   # TODO a hand will need to do this.
   def handle_cast({:place_item, item, public_info}, state) do
     {:noreply, %Location{state | corpses: Map.put(state.corpses, item, public_info)}}
+  end
+
+  def handle_cast({:announce_death, {{module, mob_id}, public_info}}, state) do
+    leftover_entities = Map.delete(state.entities, {module, mob_id})
+    send_notification(
+      leftover_entities,
+      fn({module, id}) ->
+        Kernel.apply(module, :handle, [id, {:death, public_info}])
+      end)
+
+    {:noreply, %Location{state | entities: leftover_entities}}
   end
 
   def handle_cast({:monitor_pathway, pathway_pid}, state) do
@@ -98,7 +114,7 @@ defmodule World.Location do
         |> elem(1)
 
       send_notification(
-        state,
+        state.entities,
         fn({module, id}) ->
           Kernel.apply(module, :handle, [id, {:depart, public_info, exit_name}])
         end)
@@ -116,12 +132,11 @@ defmodule World.Location do
       end)
       |> Map.get(:name, "seemingly nowhere")
 
-    send_notification(state, fn({module, id}) ->
-      Kernel.apply(
-        module,
-        :handle,
-        [id, {:arrive, public_info, incoming_exit_name}])
-    end)
+    send_notification(
+      state.entities,
+      fn({module, id}) ->
+        Kernel.apply(module, :handle, [id, {:arrive, public_info, incoming_exit_name}])
+      end)
     {
       :reply,
       {:ok, state.pathways},

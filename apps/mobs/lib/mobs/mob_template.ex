@@ -18,15 +18,9 @@ defmodule Mobs.MobTemplate do
         Process.flag(:trap_exit, true)
         {:ok, exits} = World.Location.arrive(location_id, {{__MODULE__, state.id}, public_info(state), "seemingly nowhere"})
         new_state = %__MODULE__{state | exits: exits}
-        # This start_link means that the mobs app depends on the controllers app
-        # and the controllers app depends on the mob app
-        # Which is right, which is wrong?
-        # Or should I create an app above both of those for spawning mobs?
         {:ok, pid} = Controllers.Mob.start_link(%{module: __MODULE__, id: new_state.id, timer_ref: nil, mob_state: new_state})
         {:ok, %__MODULE__{new_state | controller: pid}}
       end
-
-      def handle(id, message), do: GenServer.cast(via_mob(id), message)
 
       def set_location(mob_id, loc_id, exits), do: GenServer.cast(via_mob(mob_id), {:set_location, loc_id, exits})
       def handle_cast({:set_location, loc_id, exits}, state), do: {:noreply, %__MODULE__{state | location_id: loc_id, exits: exits}}
@@ -61,7 +55,7 @@ defmodule Mobs.MobTemplate do
           %{state | location_id: new_loc_id, exits: new_exits}
         else
           false -> state
-          :not_in_location -> state
+        :not_in_location -> state
         end
       end
 
@@ -69,26 +63,32 @@ defmodule Mobs.MobTemplate do
 
       # spec: state :: state
       # TODO return list of messages out of here... ?
-      def try_to_mate(%{pregnant: false} = state) do
+      def try_to_mate(state) do
         looking_for = case state.gender do
                         :male -> :female
                         :female -> :male
                       end
 
-        possible_partners = World.Location.mobs(state.location_id)
+        possible_partners_task =
+          Task.async(World.Location, :mobs, [state.location_id])
 
-        {:ok, {new_state, messages}} =
-          Mobs.SexualReproduction.call(
-            {state, []},
-            {
-              state.gender,
-              looking_for,
-              __MODULE__,
-              possible_partners
-            })
+        case Task.yield(possible_partners_task, 50) || Task.shutdown(possible_partners_task) do
+          nil -> state
+          {:ok, possible_partners} ->
+            {:ok, {new_state, messages}} =
+              Mobs.SexualReproduction.call(
+                {state, []},
+                {
+                  state.gender,
+                  looking_for,
+                  __MODULE__,
+                  possible_partners
+                })
 
-        Enum.each(messages, fn({m, f, arglist}) -> Kernel.apply(m, f, arglist) end)
-        new_state
+            Enum.each(messages, fn({m, f, arglist}) -> Kernel.apply(m, f, arglist) end)
+            new_state
+        end
+
       end
 
       def depregnantize(id), do: GenServer.cast(via_mob(id), :depregnantize)
@@ -105,6 +105,12 @@ defmodule Mobs.MobTemplate do
         {:noreply, new_state}
       end
 
+      def handle(id, message), do: GenServer.cast(via_mob(id), message)
+
+      # Yeah so this should actually *do* something
+      # But for now it'll help avoid mailboxes getting full.
+      def handle_cast(_msg, state), do: {:noreply, state}
+
       def stop(mob_id) do
         GenServer.stop(via_mob(mob_id))
       end
@@ -112,11 +118,12 @@ defmodule Mobs.MobTemplate do
       def terminate(reason, state) do
         Registry.unregister(Mobs.Registry, {__MODULE__, state.id})
         GenServer.stop(state.controller)
+        # TODO this needs to be a more elegant "queue message to everyone in the room that the mob died"
+        World.Location.announce_death(state.location_id, {{__MODULE__, state.id}, public_info(state)})
         Life.Reaper.claim({__MODULE__, state.id}, state.location_id, public_info(state))
-        World.Location.depart(state.location_id, {{__MODULE__, state.id}, public_info(state), "to a better place"})
         reason
       end
-
+\
       defp public_info(state) do
         %{
           gender: state.gender,
@@ -124,9 +131,6 @@ defmodule Mobs.MobTemplate do
           pregnant: state.pregnant
         }
       end
-
-      #TODO this will be helpful
-      #defp leave("to nothingness"), do: ""
 
     end
   end

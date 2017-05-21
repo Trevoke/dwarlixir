@@ -23,7 +23,7 @@ defmodule Ecosystem do
     free / total * 100
   end
 
-  def check_system do
+  def check_system(_pid) do
     GenServer.cast(__MODULE__, :check_system)
   end
 
