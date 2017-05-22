@@ -22,6 +22,10 @@ defmodule Mobs.SexualReproduction do
     end
   end
 
+  def call({%{pregnant: true} = state, messages}, {:female, _, _, _}) do
+    {:ok, {state, messages}}
+  end
+
   def call({state, messages}, {:female, :male, my_species, entities_around}) do
     possible_males =
       Enum.filter(

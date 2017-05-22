@@ -2,9 +2,24 @@ defmodule Mobs.SexualReproductionTest do
   use ExUnit.Case
   doctest Mobs.SexualReproduction
 
+  test "pregnant female does not mate" do
+    male_bird = %{{Mobs.Bird, 2} => %{id: 2, gender: :male}}
+    state = %{id: 1, gender: :female, pregnant: true}
+    {:ok, {_new_state, messages}} = Mobs.SexualReproduction.call(
+      {state, []},
+      {
+        :female,
+        :male,
+        Mobs.Bird,
+        male_bird
+      })
+    IO.inspect messages
+    assert length(messages) == 0
+  end
+
+
   test "female reproduces with male, same species" do
     male_bird = %{{Mobs.Bird, 2} => %{id: 2, gender: :male}}
-    # TODO worth testing with pregnant: true?
     state = %{id: 1, gender: :female, pregnant: false}
     {:ok, {_new_state, messages}} = Mobs.SexualReproduction.call(
       {state, []},
