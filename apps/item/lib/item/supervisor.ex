@@ -17,6 +17,15 @@ defmodule Item.Supervisor do
       [id: public_info.id]
     )
     {:ok, pid} = Supervisor.start_child(__MODULE__, corpse)
-    World.Location.place_item(loc_id, {Item.Corpse, public_info.id}, public_info)
+  end
+
+  def create(:egg, loc_id, public_info) do
+    egg_id = UUID.uuid4(:hex)
+    egg = worker(
+      Item.Egg,
+      [Map.merge(public_info, %{location_id: loc_id, id: egg_id})],
+      [id: egg_id]
+    )
+    {:ok, pid} = Supervisor.start_child(__MODULE__, egg)
   end
 end

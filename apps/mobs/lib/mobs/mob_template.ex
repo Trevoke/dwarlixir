@@ -60,7 +60,6 @@ defmodule Mobs.MobTemplate do
       end
 
       def try_to_mate(%{pregnant: true} = state), do: state
-
       # spec: state :: state
       # TODO return list of messages out of here... ?
       def try_to_mate(state) do
@@ -88,7 +87,6 @@ defmodule Mobs.MobTemplate do
             Enum.each(messages, fn({m, f, arglist}) -> Kernel.apply(m, f, arglist) end)
             new_state
         end
-
       end
 
       def depregnantize(id), do: GenServer.cast(via_tuple(id), :depregnantize)

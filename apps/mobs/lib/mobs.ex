@@ -48,72 +48,11 @@ defmodule Mobs do
   end
 
   def handle_call({:birth, options}, _from, %{allow_births: allow_births} = state) when allow_births == true do
-    {:ok, pid} = give_birth(new_id(), options)
-    {:reply, {:ok, pid}, state}
+#    {:ok, pid} = give_birth(new_id(), options)
+    {:reply, {:ok, nil}, state}
   end
   def handle_call({:birth, _options}, _from, %{allow_births: allow_births} = state) when allow_births == false do
     {:reply, {:error, :no_births}, state}
-  end
-
-  defp give_birth(id, %{module: Mobs.Dwarf} = options) do
-    import Supervisor.Spec, warn: false
-
-    state = %{lifespan_type: Application.get_env(:mobs, :lifespan)}
-    gender = options[:gender] || Enum.random([:male, :female])
-    lifespan = random_lifespan(state.lifespan_type)
-
-    dwarf = worker(
-      Mobs.Dwarf,
-      [%Mobs.Dwarf{id: id,
-                   location_id: options.location_id,
-                   gender: gender,
-                   name: Faker.Name.name,
-                   lifespan: lifespan}],
-      [id: id]
-    )
-
-    Supervisor.start_child(Mobs.Supervisor, dwarf)
-  end
-
-
-  defp give_birth(id, %{module: Mobs.Bird} = options) do
-    import Supervisor.Spec, warn: false
-
-    state = %{lifespan_type: Application.get_env(:mobs, :lifespan)}
-    gender = options[:gender] || Enum.random([:male, :female])
-    lifespan = options[:lifespan] || random_lifespan(state.lifespan_type)
-
-    bird = worker(
-      Mobs.Bird,
-      [%Mobs.Bird{id: id,
-                  location_id: options.location_id,
-                  gender: gender,
-                  name: "a bird",
-                  lifespan: lifespan}],
-      [id: id]
-    )
-
-    Supervisor.start_child(Mobs.Supervisor, bird)
-  end
-
-  defp give_birth(id, options) do
-    import Supervisor.Spec, warn: false
-
-    state = %{lifespan_type: Application.get_env(:mobs, :lifespan)}
-    gender = options[:gender] || Enum.random([:male, :female])
-    lifespan = random_lifespan(state.lifespan_type)
-
-    mob = worker(
-      options.module,
-      [struct(options.module, [id: id,
-                               location_id: options.location_id,
-                               gender: gender,
-                               name: Faker.Name.name,
-                               lifespan: lifespan])],
-      [id: id]
-    )
-
-    Supervisor.start_child(Mobs.Supervisor, mob)
   end
 
   defp new_id, do: UUID.uuid4(:hex)

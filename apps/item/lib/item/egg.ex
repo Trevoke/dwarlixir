@@ -1,22 +1,35 @@
-defmodule Item.Corpse do
+defmodule Item.Egg do
   use GenServer
+
+  def via_tuple(id), do: {:via, Registry, {Registry.Items, id}}
 
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: via_tuple(args.id))
   end
 
-  def via_tuple(id), do: {:via, Registry, {Registry.Items, id}}
-
   def init(state) do
+    state =
+      state
+      |> Map.put(:name, "egg")
+      |> Map.put(:lifespan, 30)
     Registry.register(Registry.Tick, :subject_to_time, nil)
     World.Location.place_item(state.location_id, {__MODULE__, state.id}, state)
-    {:ok, Map.put(state, :lifespan, 100)}
+    {:ok, state}
   end
 
   def handle_cast(:tick, %{lifespan: 0} = state) do
+    World.Location.remove_item(state.location_id, {__MODULE__, state.id})
+    birth =
+      Task.async(
+        state.module,
+        :birth,
+        [state]
+      )
+
+    Task.yield(birth, 50) || Task.shutdown(birth)
+
     # TODO send a message?
-    GenServer.stop(self())
-    {:noreply, state}
+    {:stop, :normal, state}
   end
 
   def handle_cast(:tick, %{lifespan: lifespan} = state) do
@@ -24,7 +37,6 @@ defmodule Item.Corpse do
   end
 
   def terminate(reason, state) do
-    World.Location.remove_item(state.location_id, {__MODULE__, state.id})
     Registry.unregister(Registry.Tick, self())
     Registry.unregister(Registry.Items, state.id)
     reason

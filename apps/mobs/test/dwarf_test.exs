@@ -11,17 +11,17 @@ defmodule Mobs.DwarfTest do
         description: "what's on the tin",
         pathways: []}
     )
-    {:ok, male_dwarf} = Mobs.birth(
-      %{gender: :male, module: Mobs.Dwarf, location_id: loc_id, lifespan: 1000})
-    {:ok, female_dwarf} = Mobs.birth(
-      %{gender: :female, module: Mobs.Dwarf, location_id: loc_id, lifespan: 1000})
+    {:ok, female_dwarf} = Mobs.Dwarf.birth(
+      %{gender: :female, location_id: loc_id, lifespan: 1000,
+              pregnant: true,
+        ticks_to_birth: 1,})
 
-    controller = :sys.get_state(male_dwarf).controller
+    controller = :sys.get_state(female_dwarf).controller
     GenServer.cast(controller, :tick)
     # TODO oh good, sleeping
     Process.sleep 20
     contents = World.Location.look(loc_id)
-    #assert length(contents.items) == 1
+    assert length(contents.living_things) == 2
   end
 
 end

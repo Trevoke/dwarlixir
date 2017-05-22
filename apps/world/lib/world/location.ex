@@ -44,7 +44,7 @@ defmodule World.Location do
   end
 
   def place_item(loc_id, item_ref, item_info) do
-    GenServer.cast(via_tuple(loc_id), {:place_item, item_ref, item_info})
+    GenServer.call(via_tuple(loc_id), {:place_item, item_ref, item_info})
   end
 
   def remove_item(loc_id, item) do
@@ -65,14 +65,16 @@ defmodule World.Location do
     mobs(loc_id, fn(_x) -> true end)
   end
 
-  def handle_cast({:remove_item, item}, state) do
-    {:noreply, %__MODULE__{state | items: Map.delete(state.items, item)}}
+  # TODO make it a call
+  def handle_cast({:remove_item, {module, id}}, state) do
+    Process.unlink(GenServer.whereis Item.Corpse.via_tuple(id))
+    {:noreply, %__MODULE__{state | items: Map.delete(state.items, {module, id})}}
   end
 
   # TODO a hand will need to do this.
-  def handle_cast({:place_item, {module, id}, public_info}, state) do
+  def handle_call({:place_item, {module, id}, public_info}, _from, state) do
     Process.link(GenServer.whereis Item.Corpse.via_tuple(id))
-    {:noreply, %Location{state | items: Map.put(state.items, {module, id}, public_info)}}
+    {:reply, :ok, %Location{state | items: Map.put(state.items, {module, id}, public_info)}}
   end
 
   def handle_cast({:announce_death, {{module, mob_id}, public_info}}, state) do
@@ -100,7 +102,7 @@ defmodule World.Location do
     # Maybe define it in Item.Corpse.init ?
     items = state.items
       |> Map.values
-      |> Enum.map(&("the corpse of #{&1.name}"))
+      |> Enum.map(&(&1.name))
     seen_things = %{
       living_things: living_things,
       items: items,
