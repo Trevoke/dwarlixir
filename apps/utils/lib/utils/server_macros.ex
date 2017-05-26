@@ -13,6 +13,8 @@ defmodule Utils.ServerMacros do
   # TODO - what about other returns like :stop?
   #
   # TODO - defcall
+  #
+  # TODO - document the "do_foo"
 
   defmacro defcast(message, payload, do: block) do
     quote do
