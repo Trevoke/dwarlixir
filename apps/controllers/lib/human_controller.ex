@@ -45,8 +45,9 @@ defmodule Controllers.Human do
     end)
     |> Enum.sort
     |> Enum.map(fn({{event_name, event_property}, instances}) ->
-      (Enum.map(instances, fn(instance) -> elem(instance, 1).name end)
-      |> Enum.join(", ")) <> " #{event_name} PROPERTY HERE #{event_property}.\n"
+      Enum.map(instances, fn(instance) -> elem(instance, 1).name end)
+      |> Enum.join(", ")
+      |> polish_event(event_name, event_property)
     end)
     |> Enum.join
 

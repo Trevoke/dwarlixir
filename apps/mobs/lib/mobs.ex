@@ -40,18 +40,15 @@ defmodule Mobs do
     end)
   end
 
-  # TODO - `Mobs.birth` should be a function on the Mob's module itself
-  # This allows proper full removal of the dependency to `Mobs` from `Controller`
-  # And is *probably* better all around.
   def birth(options) do
     GenServer.call(__MODULE__, {:birth, options})
   end
 
-  def handle_call({:birth, options}, _from, %{allow_births: allow_births} = state) when allow_births == true do
-#    {:ok, pid} = give_birth(new_id(), options)
-    {:reply, {:ok, nil}, state}
+  def handle_call({:birth, options}, _from, %{allow_births: true} = state) do
+    Kernel.apply options.module, :new_life, [options]
+    {:reply, :ok, state}
   end
-  def handle_call({:birth, _options}, _from, %{allow_births: allow_births} = state) when allow_births == false do
+  def handle_call({:birth, _options}, _from, %{allow_births: false} = state) do
     {:reply, {:error, :no_births}, state}
   end
 
