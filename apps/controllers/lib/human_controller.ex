@@ -1,6 +1,6 @@
 defmodule Controllers.Human do
   defstruct [
-    :socket, :id, :location_id, exits: []
+    :socket, :id, :location_id, exits: [], messages: []
   ]
   use GenServer
 
@@ -10,6 +10,7 @@ defmodule Controllers.Human do
 
   def init(args) do
     Registry.update_value(Registry.HumanControllers, args.id, fn(_x) -> args.id end)
+    Registry.register(Registry.Tick, :subject_to_time, self())
     {:ok, args}
   end
 
@@ -26,6 +27,37 @@ defmodule Controllers.Human do
     end
   end
 
+
+  # messages => [{:arrive, mob_id, loc}, {:depart}]
+  # => %{:arrive => [{}], :depart => [{}]}
+  # => %{:arrive => ["John McKoala", "Oliver McKoala"]}
+  # => [["John McKoala, OliverMcKoala arrive."]]
+  # => "Foo\nbar"
+
+  defp polish_event(string, :arrive, from), do: string <> " arrived from #{from}.\n"
+  defp polish_event(string, :depart, to), do: string <> " is leaving going #{to}.\n"
+  defp polish_event(string, :death, nil), do: string <> " died.\n"
+
+  def handle_cast(:tick, state) do
+    events = state.messages
+    |> Enum.reduce(%{}, fn(msg, acc) ->
+      Map.update(acc, {elem(msg, 0), elem(msg, 2)}, [msg], fn(v) -> [msg | v] end)
+    end)
+    |> Enum.sort
+    |> Enum.map(fn({{event_name, event_property}, instances}) ->
+      (Enum.map(instances, fn(instance) -> elem(instance, 1).name end)
+      |> Enum.join(", ")) <> " #{event_name} PROPERTY HERE #{event_property}.\n"
+    end)
+    |> Enum.join
+
+    write_line(state.socket, events)
+
+    # handle arrive messages - write_line(state.socket, "#{info.name} arrived from #{from_loc}.\n")
+    # handle depart messages - write_line(state.socket, "#{info.name} is leaving towards #{to}.\n")
+    # handle death messages -  write_line(state.socket, "#{info.name} has just died.")
+    {:noreply, %__MODULE__{state | messages: []}}
+  end
+
   def handle(user_id, {:input, input}) do
     GenServer.cast(via_tuple(user_id), {:input, String.trim(input)})
   end
@@ -33,6 +65,19 @@ defmodule Controllers.Human do
   def handle(user_id, message) do
     GenServer.cast(via_tuple(user_id), message)
   end
+
+  def handle_cast({:arrive, info, from_loc} = message, state) do
+    {:noreply, %__MODULE__{state | messages: [message | state.messages]}}
+  end
+
+  def handle_cast({:depart, info, to} = message, state) do
+    {:noreply, %__MODULE__{state | messages: [message | state.messages]}}
+  end
+
+  def handle_cast({:death, info} = message, state) do
+    {:noreply, %__MODULE__{state | messages: [Tuple.append(message, nil) | state.messages]}}
+  end
+
 
   def join_room(user_id, loc_id)do
     GenServer.cast(via_tuple(user_id), {:join_room, loc_id})
@@ -50,18 +95,6 @@ defmodule Controllers.Human do
       %__MODULE__{state |
                   location_id: loc_id,
                   exits: exits}}
-  end
-
-  def handle_cast({:arrive, info, from_loc}, state) do
-    write_line(state.socket,
-      "#{info.name} arrived from #{from_loc}.\n")
-    {:noreply, state}
-  end
-
-  def handle_cast({:depart, info, to}, state) do
-    write_line(state.socket,
-    "#{info.name} is leaving towards #{to}.\n")
-    {:noreply, state}
   end
 
   def handle_cast({:input, "help"}, state) do
@@ -157,11 +190,6 @@ defmodule Controllers.Human do
         write_line(state.socket, "Sorry, I don't understand that.")
         {:noreply, state}
     end
-  end
-
-  def handle_cast({:death, info}, state) do
-    write_line(state.socket, "#{info.name} has just died.")
-    {:noreply, state}
   end
 
   defp read_entities(entities) do

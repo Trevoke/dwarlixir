@@ -41,7 +41,8 @@ defmodule Controllers.Mixfile do
       {:world, in_umbrella: true},
       {:doc_first_formatter, "~> 0.0.2", only: [:test]},
       {:table_rex, "~> 0.10.0"},
-      {:bunt, "~> 0.2.0"}
+      {:bunt, "~> 0.2.0"},
+      {:gen_stage, "~> 0.11"}
     ]
   end
 end
