@@ -27,5 +27,7 @@ defmodule Item.Supervisor do
       [id: egg_id]
     )
     {:ok, pid} = Supervisor.start_child(__MODULE__, egg)
+    Io.inspect pid
+    {:ok, pid}
   end
 end

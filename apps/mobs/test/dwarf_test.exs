@@ -16,7 +16,7 @@ defmodule Mobs.DwarfTest do
               pregnant: true,
         ticks_to_birth: 1,})
 
-    controller = :sys.get_state(female_dwarf).controller
+    controller = :sys.get_state(female_dwarf).controller_pid
     GenServer.cast(controller, :tick)
     # TODO oh good, sleeping
     Process.sleep 20
