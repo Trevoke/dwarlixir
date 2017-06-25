@@ -2,7 +2,6 @@ defmodule Mobs.Bird do
   use Mobs.MobTemplate
 
   def new_life(%{location_id: loc_id} = options) do
-    IO.inspect options
     Item.Supervisor.create(:egg, loc_id, Map.put(options, :module, __MODULE__))
   end
 

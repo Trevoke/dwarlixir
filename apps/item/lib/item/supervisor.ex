@@ -14,7 +14,7 @@ defmodule Item.Supervisor do
     corpse = worker(
       Item.Corpse,
       [Map.put(public_info, :location_id, loc_id)],
-      [id: public_info.id]
+      [id: public_info.id, restart: :transient]
     )
     {:ok, pid} = Supervisor.start_child(__MODULE__, corpse)
   end
@@ -24,10 +24,9 @@ defmodule Item.Supervisor do
     egg = worker(
       Item.Egg,
       [Map.merge(public_info, %{location_id: loc_id, id: egg_id})],
-      [id: egg_id]
+      [id: egg_id, restart: :transient]
     )
     {:ok, pid} = Supervisor.start_child(__MODULE__, egg)
-    Io.inspect pid
     {:ok, pid}
   end
 end

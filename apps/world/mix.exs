@@ -39,8 +39,7 @@ defmodule World.Mixfile do
   defp deps do
     [
       {:utils, in_umbrella: true},
-      {:doc_first_formatter, "~> 0.0.2", only: [:test]},
-      {:gen_stage, "~> 0.11"}
+      {:doc_first_formatter, "~> 0.0.2", only: [:test]}
     ]
   end
 end
