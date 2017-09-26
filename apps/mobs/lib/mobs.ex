@@ -14,15 +14,7 @@ defmodule Mobs do
   def deny_births, do: GenServer.cast(__MODULE__, :stop_births)
   def allow_births, do: GenServer.cast(__MODULE__, :allow_births)
 
-  def handle_cast(:stop_births, state) do
-    {:ok, %{state | allow_births: false}}
-  end
-
-  def handle_cast(:allow_births, state) do
-    {:ok, %{state | allow_births: true}}
-  end
-
-    def create_mobs(number_of_mobs_to_spawn \\ 40) do
+  def create_mobs(number_of_mobs_to_spawn \\ 40) do
     Task.start(__MODULE__, :generate_mobs, [number_of_mobs_to_spawn])
   end
 
@@ -52,6 +44,15 @@ defmodule Mobs do
     {:reply, {:error, :no_births}, state}
   end
 
+  def handle_cast(:stop_births, state) do
+    {:noreply, %{state | allow_births: false}}
+  end
+
+  def handle_cast(:allow_births, state) do
+    {:noreply, %{state | allow_births: true}}
+  end
+
+  # TODO duplicated right now, not sure where to deduplicate it to
   defp new_id, do: UUID.uuid4(:hex)
 
   defp random_lifespan(:short), do: 300 + Enum.random(1..200)

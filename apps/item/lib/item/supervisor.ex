@@ -16,7 +16,7 @@ defmodule Item.Supervisor do
       [Map.put(public_info, :location_id, loc_id)],
       [id: public_info.id, restart: :transient]
     )
-    {:ok, pid} = Supervisor.start_child(__MODULE__, corpse)
+    {:ok, _pid} = Supervisor.start_child(__MODULE__, corpse)
   end
 
   def create(:egg, loc_id, public_info) do

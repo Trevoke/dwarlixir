@@ -19,7 +19,7 @@ defmodule Mobs.Dwarf do
     gender = options[:gender] || Enum.random([:male, :female])
     lifespan = random_lifespan(state.lifespan_type)
 
-        initial_values = %{
+    initial_values = %{
       id: id,
       location_id: loc_id,
       gender: gender,

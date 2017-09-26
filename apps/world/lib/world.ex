@@ -33,7 +33,7 @@ defmodule World do
     worker(World.Location, [opts], restart: :permanent, id: opts.id)
   end
 
-  defp map_data, do: World.Generator.call
+  # defp map_data, do: World.Generator.call
 
   defp map_data_old do
     [

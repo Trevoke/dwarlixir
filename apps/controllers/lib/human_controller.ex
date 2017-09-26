@@ -18,25 +18,40 @@ defmodule Controllers.Human do
     {:via, Registry, {Registry.HumanControllers, id}}
   end
 
-  def log_in(user_id, password, socket) do
+  def log_in(user_id, _password, socket) do
     user_id = String.trim user_id
-    with {:ok, pid} <- Controllers.Human.start_link(%__MODULE__{id: user_id, socket: socket}) do
-      {:ok, user_id}
-    else
+    case Controllers.Human.start_link(%__MODULE__{id: user_id, socket: socket}) do
+      {:ok, _pid} -> {:ok, user_id}
       {:error, {:already_started, _pid}} -> {:error, :username_taken}
     end
   end
 
+  def join_room(user_id, loc_id)do
+    GenServer.cast(via_tuple(user_id), {:join_room, loc_id})
+  end
+
+  def terminate(reason, _state) do
+    #Registry.unregister(Registry.HumanControllers, state.id)
+    reason
+  end
+
+  defp polish_event(string, :arrive, from), do: string <> " arrived from #{from}.\n"
+  defp polish_event(string, :depart, to), do: string <> " is leaving going #{to}.\n"
+  defp polish_event(string, :death, nil), do: string <> " died.\n"
+
+  def handle(user_id, {:input, input}) do
+    GenServer.cast(via_tuple(user_id), {:input, String.trim(input)})
+  end
+
+  def handle(user_id, message) do
+    GenServer.cast(via_tuple(user_id), message)
+  end
 
   # messages => [{:arrive, mob_id, loc}, {:depart}]
   # => %{:arrive => [{}], :depart => [{}]}
   # => %{:arrive => ["John McKoala", "Oliver McKoala"]}
   # => [["John McKoala, OliverMcKoala arrive."]]
   # => "Foo\nbar"
-
-  defp polish_event(string, :arrive, from), do: string <> " arrived from #{from}.\n"
-  defp polish_event(string, :depart, to), do: string <> " is leaving going #{to}.\n"
-  defp polish_event(string, :death, nil), do: string <> " died.\n"
 
   def handle_cast(:tick, state) do
     events = state.messages
@@ -59,29 +74,16 @@ defmodule Controllers.Human do
     {:noreply, %__MODULE__{state | messages: []}}
   end
 
-  def handle(user_id, {:input, input}) do
-    GenServer.cast(via_tuple(user_id), {:input, String.trim(input)})
-  end
-
-  def handle(user_id, message) do
-    GenServer.cast(via_tuple(user_id), message)
-  end
-
-  def handle_cast({:arrive, info, from_loc} = message, state) do
+  def handle_cast({:arrive, _info, _from_loc} = message, state) do
     {:noreply, %__MODULE__{state | messages: [message | state.messages]}}
   end
 
-  def handle_cast({:depart, info, to} = message, state) do
+  def handle_cast({:depart, _info, _to} = message, state) do
     {:noreply, %__MODULE__{state | messages: [message | state.messages]}}
   end
 
-  def handle_cast({:death, info} = message, state) do
+  def handle_cast({:death, _info} = message, state) do
     {:noreply, %__MODULE__{state | messages: [Tuple.append(message, nil) | state.messages]}}
-  end
-
-
-  def join_room(user_id, loc_id)do
-    GenServer.cast(via_tuple(user_id), {:join_room, loc_id})
   end
 
   def handle_cast({:join_room, loc_id}, state) do
@@ -211,11 +213,6 @@ defmodule Controllers.Human do
       |> Enum.map(fn(x) -> x.name end)
       |> Enum.join(", ")
     "Exits: #{exit_text}."
-  end
-
-  def terminate(reason, _state) do
-    #Registry.unregister(Registry.HumanControllers, state.id)
-    reason
   end
 
   defp write_line(socket, line) do

@@ -17,7 +17,7 @@ defmodule Controllers.Mob do
   def handle_cast(:tick, state) do
     mob_state = Agent.get(state.agent_pid, &(&1))
     new_mob_state = tick(state, mob_state)
-    Agent.update(state.agent_pid, fn(x) -> new_mob_state end)
+    Agent.update(state.agent_pid, fn(_x) -> new_mob_state end)
     {:noreply, state}
   end
 

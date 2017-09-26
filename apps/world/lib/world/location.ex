@@ -65,32 +65,10 @@ defmodule World.Location do
     mobs(loc_id, fn(_x) -> true end)
   end
 
-  # TODO make it a call
-  def handle_cast({:remove_item, {module, id}}, state) do
-    Process.unlink(GenServer.whereis Item.Corpse.via_tuple(id))
-    {:noreply, %__MODULE__{state | items: Map.delete(state.items, {module, id})}}
-  end
-
   # TODO a hand will need to do this.
   def handle_call({:place_item, {module, id}, public_info}, _from, state) do
     Process.link(GenServer.whereis Item.Corpse.via_tuple(id))
     {:reply, :ok, %Location{state | items: Map.put(state.items, {module, id}, public_info)}}
-  end
-
-  def handle_cast({:announce_death, {{module, mob_id}, public_info}}, state) do
-    leftover_entities = Map.delete(state.entities, {module, mob_id})
-    send_notification(
-      leftover_entities,
-      fn({module, id}) ->
-        Kernel.apply(module, :handle, [id, {:death, public_info}])
-      end)
-
-    {:noreply, %Location{state | entities: leftover_entities}}
-  end
-
-  def handle_cast({:monitor_pathway, pathway_pid}, state) do
-    Process.link(pathway_pid)
-    {:noreply, state}
   end
 
   def handle_call(:look, _from, state) do
@@ -157,6 +135,28 @@ defmodule World.Location do
   def handle_call({:mobs, filter}, _from, state) do
     mobs = Enum.filter(state.entities, filter)
     {:reply, mobs, state}
+  end
+
+  # TODO make it a call
+  def handle_cast({:remove_item, {module, id}}, state) do
+    Process.unlink(GenServer.whereis Item.Corpse.via_tuple(id))
+    {:noreply, %__MODULE__{state | items: Map.delete(state.items, {module, id})}}
+  end
+
+  def handle_cast({:announce_death, {{module, mob_id}, public_info}}, state) do
+    leftover_entities = Map.delete(state.entities, {module, mob_id})
+    send_notification(
+      leftover_entities,
+      fn({module, id}) ->
+        Kernel.apply(module, :handle, [id, {:death, public_info}])
+      end)
+
+    {:noreply, %Location{state | entities: leftover_entities}}
+  end
+
+  def handle_cast({:monitor_pathway, pathway_pid}, state) do
+    Process.link(pathway_pid)
+    {:noreply, state}
   end
 
   defp launch_known_pathways(id, pathways) do

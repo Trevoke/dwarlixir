@@ -15,7 +15,7 @@ defmodule Mobs.SexualReproduction do
       {:ok, {state, messages}}
     else
       # TODO genetics
-      {{module, id}, info} =
+      {{module, id}, _info} =
         possible_females
         |> Enum.random
       {:ok, {state, [{module, :pregnantize, [id]}  | messages]}}
@@ -39,13 +39,15 @@ defmodule Mobs.SexualReproduction do
       {:ok, {state, messages}}
     else
       # TODO : genetics
-      {{module, id}, info} =
+      # I don't really care about the male right now, but eventually I'll care
+      # about what he brings to the equation.
+      {{_module, _id}, _info} =
         possible_males
         |> Enum.random
       {:ok, {state, [{my_species, :pregnantize, [state.id]}  | messages]}}
     end
   end
 
-  def call({state, messages}, args), do: {state, messages}
+  def call({state, messages}, _args), do: {state, messages}
 
 end
