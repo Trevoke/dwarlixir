@@ -4,6 +4,8 @@
 
 ## Getting started
 
+Make sure you have Elixir ~> 1.5.1 available.
+
 Clone the project. run `iex -S mix`. When the app starts, in another terminal, run `telnet localhost 4040`. you can type `look` and `quit`. AMAZING, IS IT NOT?
 
 ## Background
