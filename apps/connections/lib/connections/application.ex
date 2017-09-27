@@ -11,7 +11,8 @@ defmodule Connections.Application do
     # Define workers and child supervisors to be supervised
     children = [
       supervisor(Task.Supervisor, [[name: Connections.TaskSupervisor]]),
-      supervisor(Registry, [:unique, Registry.HumanControllers]),
+      supervisor(Registry, [:unique, Registry.HumanControllers], id: :human_controllers_registry),
+      supervisor(Registry, [:duplicate, Registry.Controllers], id: :controllers_registry),
       worker(Task, [Connections.Tcp, :accept, [4040]])
     ]
 

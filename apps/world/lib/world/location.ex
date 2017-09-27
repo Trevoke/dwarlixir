@@ -18,6 +18,7 @@ defmodule World.Location do
   def init(%__MODULE__{pathways: pathways, id: id} = state) do
     Process.flag(:trap_exit, true)
     {id, nil} = Registry.update_value(LocationRegistry, id, fn(_x) -> id end)
+    Registry.register(World.Registry, "location", id)
     launch_known_pathways(id, pathways)
     check_for_other_pathways_to_monitor(id)
     {:ok, state}
@@ -168,7 +169,8 @@ defmodule World.Location do
   end
 
   defp check_for_other_pathways_to_monitor(this_loc_id) do
-    Registry.match(PathwayRegistry, {this_loc_id, :_}, :_)
+    World.Registry
+    |> Registry.match("pathway", {this_loc_id, :_})
     |> Enum.map(fn({pid, _}) -> pid end)
     |> Enum.each(fn(pid) -> Process.link(pid) end)
   end

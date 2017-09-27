@@ -20,8 +20,8 @@ defmodule Mobs do
 
   def generate_mobs(number_to_spawn) do
     locs =
-      World.LocationRegistry
-      |> Registry.match(:_, :_)
+      World.Registry
+      |> Registry.match("location", :_)
       |> Enum.map(fn({_pid, val}) -> val end)
     mob_types = [Mobs.Dwarf, Mobs.Bird]
 

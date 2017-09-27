@@ -19,14 +19,10 @@ defmodule World do
     Supervisor.start_child(:world, new_loc(opts))
   end
 
-  def overview do
-    World.LocationRegistry
-    |> Registry.match(:_, :_)
+  def random_room_id do
+    Registry.match(World.Registry, "location", :_)
     |> Enum.map(fn({_, id}) -> id end)
-    |> Enum.map(fn(x) ->
-      World.Location.look(x)
-    end)
-    |> IO.inspect
+    |> Enum.random
   end
 
   def new_loc(opts) do
@@ -35,7 +31,7 @@ defmodule World do
 
   # defp map_data, do: World.Generator.call
 
-  defp map_data_old do
+  def map_data_old do
     [
       location("1", "The Broken Drum", "A tired bar that has seen too many fights",
         [

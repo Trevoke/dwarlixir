@@ -10,6 +10,7 @@ defmodule Controllers.Human do
 
   def init(args) do
     Registry.update_value(Registry.HumanControllers, args.id, fn(_x) -> args.id end)
+    Registry.register(Registry.Controllers, "human", args.id)
     Registry.register(Registry.Tick, :subject_to_time, self())
     {:ok, args}
   end
@@ -124,8 +125,8 @@ defmodule Controllers.Human do
 
   def handle_cast({:input, "who"}, state) do
     users =
-      Registry.HumanControllers
-      |> Registry.match(:_, :_)
+      Registry.Controllers
+      |> Registry.match("human", :_)
       |> Enum.map(&([elem(&1, 1)]))
     output = TableRex.quick_render!(users, ["Users logged in"]) <> "\n"
     write_line(state.socket, output)
@@ -168,8 +169,8 @@ defmodule Controllers.Human do
   end
 
   def handle_cast({:input, "wall " <> message}, state) do
-    Registry.HumanControllers
-    |> Registry.match(:_, :_)
+    Registry.Controllers
+    |> Registry.match("human", :_)
     |> Enum.map(&(elem(&1, 0)))
     |> Enum.each(fn(x) -> GenServer.cast(x, {:receive_wall, state.id, message}) end)
     {:noreply, state}
