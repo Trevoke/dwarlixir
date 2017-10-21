@@ -13,12 +13,11 @@ defmodule World.Application do
       supervisor(Registry, [:unique, World.LocationRegistry], id: :location_registry),
       supervisor(Registry, [:unique, World.PathwayRegistry], id: :pathway_registry),
       supervisor(Registry, [:duplicate, World.Registry], id: :world_registry),
-      supervisor(World, [%{spawn_locations: Utils.Config.get(:world, :spawn_locations)}])
+      supervisor(World.Supervisor, []),
+      worker(World, [%{init: Utils.Config.get(:world, :init)}])
     ]
 
-    # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html
-    # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: World.Supervisor]
+    opts = [strategy: :one_for_one, name: World.Application.Supervisor]
     Supervisor.start_link(children, opts)
   end
 end

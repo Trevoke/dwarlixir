@@ -3,6 +3,14 @@ defmodule World.Location do
     :id, :name, :description, :pathways, items: %{},
     entities: %{}
   ]
+  @type t :: %World.Location {
+    id: String.t,
+    name: String.t,
+    description: String.t,
+    pathways: [World.Pathway.t],
+    items: map(),
+    entities: map()
+  }
   use GenServer
 
   alias World.{Location, LocationRegistry, Pathway, PathwayRegistry}
@@ -19,9 +27,13 @@ defmodule World.Location do
     Process.flag(:trap_exit, true)
     {id, nil} = Registry.update_value(LocationRegistry, id, fn(_x) -> id end)
     Registry.register(World.Registry, "location", id)
+    pathways =
+    for %{from_id: from_id, name: name} <- pathways do
+      %Pathway{from_id: from_id, to_id: id, name: name}
+  end
     launch_known_pathways(id, pathways)
     check_for_other_pathways_to_monitor(id)
-    {:ok, state}
+    {:ok, Map.put(state, :pathways, pathways)}
   end
 
   # TODO will I need to create an eye for this?
@@ -64,6 +76,18 @@ defmodule World.Location do
 
   def mobs(loc_id)do
     mobs(loc_id, fn(_x) -> true end)
+  end
+
+  def handle_call(:location_data, _from, state) do
+    response = %__MODULE__{
+      id: state.id,
+      name: state.name,
+      description: state.description,
+      pathways: state.pathways,
+      items: %{},
+      entities: %{}
+    }
+    {:reply, response, state}
   end
 
   # TODO a hand will need to do this.
@@ -161,11 +185,10 @@ defmodule World.Location do
   end
 
   defp launch_known_pathways(id, pathways) do
-    for %{from_id: from_id, name: name} <- pathways do
-      pathway = %Pathway{from_id: from_id, to_id: id, name: name}
-      {:ok, pathway_pid} = Pathway.start_link pathway
-      GenServer.cast(via_tuple(id), {:monitor_pathway, pathway_pid})
-    end
+    Enum.each(pathways, fn(pathway) ->
+      {:ok, pid} = Pathway.start_link pathway
+      GenServer.cast(via_tuple(id), {:monitor_pathway, pid})
+    end)
   end
 
   defp check_for_other_pathways_to_monitor(this_loc_id) do

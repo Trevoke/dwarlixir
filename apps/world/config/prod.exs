@@ -1,3 +1,3 @@
 use Mix.Config
 
-config :world, spawn_locations: true
+config :world, init: :new

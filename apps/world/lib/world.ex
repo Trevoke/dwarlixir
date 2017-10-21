@@ -1,36 +1,60 @@
 defmodule World do
-  use Supervisor
+  @type t :: [World.Location.t]
+  use GenServer
+
+  @ets_name :world
+  @world_map_key :world_map
 
   def start_link(opts \\ %{}) do
-    Supervisor.start_link(__MODULE__, opts, name: :world)
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
 
-  def init(%{spawn_locations: false}), do: supervise([], strategy: :one_for_one)
-
-  def init(%{spawn_locations: true}) do
-    children =
-      map_data_old()
-      |> Enum.map(&(new_loc(&1)))
-
-    supervise(children, strategy: :one_for_one)
+  def init(%{init: false}) do
+    :ets.new(@ets_name, [:set, :named_table, :protected])
+    common_init([])
   end
 
-  def start_child(opts) do
-    Supervisor.start_child(:world, new_loc(opts))
+  def init(%{init: :simple}) do
+    :ets.new(@ets_name, [:set, :named_table, :protected])
+    children = map_data_old()
+    common_init(children)
+  end
+  def init(%{init: :new}) do
+    :ets.new(@ets_name, [:set, :named_table, :protected])
+    children = map_data()
+    common_init(children)
+  end
+  def init(%{init: world}) do
+    {:ok, @ets_name} = :ets.file2tab(@ets_name)
+    [{{:world_map, _world}, children}] = :ets.lookup(@ets_name, {@world_map_key, world})
+    common_init(children)
   end
 
-  def random_room_id do
-    Registry.match(World.Registry, "location", :_)
-    |> Enum.map(fn({_, id}) -> id end)
-    |> Enum.random
+  def save_world do
+    GenServer.call(__MODULE__, :save_world)
   end
 
-  def new_loc(opts) do
-    worker(World.Location, [opts], restart: :permanent, id: opts.id)
+  defp common_init(children) do
+    Enum.each(children, &World.Supervisor.start_child/1)
+    {:ok, %{}}
   end
 
-  # defp map_data, do: World.Generator.call
+  def handle_call(:save_world, _from, state) do
+    world_identifier = UUID.uuid4(:hex)
+    world =
+      Supervisor.which_children(World.Supervisor)
+      |> Enum.map(fn({_id, pid, _type, _module}) -> pid end)
+      |> Enum.map(&Task.async(fn() -> GenServer.call(&1, :location_data) end))
+      |> Enum.map(&Task.await/1)
+    :ets.insert(@ets_name, {{@world_map_key, world_identifier}, world})
+    :ets.tab2file(@ets_name, @ets_name)
+    {:reply, world_identifier, state}
+  end
 
+  @spec map_data() :: World.t
+  def map_data, do: World.Generator.call
+
+  @spec map_data_old() :: World.t
   def map_data_old do
     [
       location("1", "The Broken Drum", "A tired bar that has seen too many fights",

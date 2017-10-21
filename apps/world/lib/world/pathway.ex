@@ -3,9 +3,11 @@ defmodule World.Pathway do
     :from_id, :to_id, :name
   ]
 
-  @type t :: %World.Pathway{ from_id: String.t,
-                             to_id: String.t,
-                             name: String.t }
+  @type t :: %World.Pathway{
+    from_id: String.t,
+    to_id: String.t,
+    name: String.t
+  }
 
   use GenServer
   alias World.PathwayRegistry
