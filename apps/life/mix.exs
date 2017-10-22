@@ -42,7 +42,6 @@ defmodule Life.Mixfile do
       {:world, in_umbrella: true},
       {:item, in_umbrella: true},
       {:petick, "~> 0.0.1"},
-      {:doc_first_formatter, "~> 0.0.2", only: [:test]}
     ]
   end
 end

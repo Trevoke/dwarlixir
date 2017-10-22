@@ -1,2 +1,2 @@
-ExUnit.configure formatters: [DocFirstFormatter]
+#ExUnit.configure formatters: [DocFirstFormatter]
 ExUnit.start()

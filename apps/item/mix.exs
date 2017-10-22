@@ -38,8 +38,7 @@ defmodule Item.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      { :uuid, "~> 1.1" },
-      {:doc_first_formatter, "~> 0.0.2", only: [:test]}
+      { :uuid, "~> 1.1" }
     ]
   end
 end

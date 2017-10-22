@@ -39,7 +39,6 @@ defmodule Mobs.Mixfile do
       {:faker, "~> 0.9.0"},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
       {:credo, "~> 0.8.8", only: [:dev], runtime: false},
-      {:doc_first_formatter, "~> 0.0.2", only: [:test]},
       {:uuid, "~> 1.1"}
     ]
   end

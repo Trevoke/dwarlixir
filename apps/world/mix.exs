@@ -38,8 +38,7 @@ defmodule World.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
-      {:utils, in_umbrella: true},
-      {:doc_first_formatter, "~> 0.0.2", only: [:test]}
+      {:utils, in_umbrella: true}
     ]
   end
 end

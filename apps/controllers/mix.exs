@@ -39,7 +39,6 @@ defmodule Controllers.Mixfile do
     [
       {:mobs, in_umbrella: true},
       {:world, in_umbrella: true},
-      {:doc_first_formatter, "~> 0.0.2", only: [:test]},
       {:table_rex, "~> 0.10.0"},
       {:bunt, "~> 0.2.0"}
     ]
