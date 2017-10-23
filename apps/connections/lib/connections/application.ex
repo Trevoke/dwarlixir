@@ -13,7 +13,7 @@ defmodule Connections.Application do
       supervisor(Task.Supervisor, [[name: Connections.TaskSupervisor]]),
       supervisor(Registry, [:unique, Registry.HumanControllers], id: :human_controllers_registry),
       supervisor(Registry, [:duplicate, Registry.Controllers], id: :controllers_registry),
-      worker(Task, [Connections.Tcp, :accept, [4040]])
+      worker(Task, [Connections.Tcp, :accept, [Utils.Config.get(:connections, :tcp)[:port]]])
     ]
 
     # See http://elixir-lang.org/docs/stable/elixir/Supervisor.html

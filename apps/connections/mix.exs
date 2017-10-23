@@ -38,6 +38,7 @@ defmodule Connections.Mixfile do
   # Type "mix help deps" for more examples and options
   defp deps do
     [
+      {:ranch, "~> 1.4"},
       {:controllers, in_umbrella: true},
       {:world, in_umbrella: true}
     ]

@@ -6,6 +6,12 @@ defmodule Connections.Tcp do
   Starts accepting connections on the given `port`.
   """
   def accept(port) do
+    {:ok, socket_pid} = :ranch.start_listener(
+      :dwarlixir_tcp, #name
+      1024, #number of acceptors
+      :ranch_tcp, #protocol
+      [port: port]
+    )
     {:ok, socket} = :gen_tcp.listen(port,
                       [:binary, packet: :line, active: false, reuseaddr: true])
     Logger.info "Accepting connections on port #{port}"
@@ -16,7 +22,8 @@ defmodule Connections.Tcp do
     {:ok, client} = :gen_tcp.accept(socket)
     {:ok, pid} = Task.Supervisor.start_child(
       Connections.TaskSupervisor,
-      fn -> serve(client) end)
+      fn -> serve(client) end
+    )
     :ok = :gen_tcp.controlling_process(client, pid)
     loop_acceptor(socket)
   end

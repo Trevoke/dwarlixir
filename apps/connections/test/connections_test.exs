@@ -11,13 +11,13 @@ defmodule ConnectionsTest do
         description: "what's on the tin",
         pathways: []}
     )
-    {:ok, socket} = :gen_tcp.connect('127.0.0.1', 4040, [
+    {:ok, socket} = :gen_tcp.connect('127.0.0.1', 1234, [
           :binary, packet: :raw, active: :false
         ])
-    :gen_tcp.recv(socket, 0) # Choose a username
-    :gen_tcp.send(socket, "user1\n")
+    {:ok, pkt} = :gen_tcp.recv(socket, 0) # Choose a username
+    :ok = :gen_tcp.send(socket, "user1\n")
     :gen_tcp.recv(socket, 0) # Welcome prompt
-    :gen_tcp.send(socket, "look\n")
+    :ok = :gen_tcp.send(socket, "look\n")
     {:ok, x} = :gen_tcp.recv(socket, 0)
     room_desc = x |> String.split("\n") |> List.first
     assert room_desc == "what's on the tin"
