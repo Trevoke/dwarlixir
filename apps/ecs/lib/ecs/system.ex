@@ -20,13 +20,12 @@ defmodule Ecs.System do
           Ecs.Component.update(pid, new_state)
         end)
       end
+
       def dispatch(pid, action) when is_pid(pid) do
         state = Ecs.Component.get(pid)
         dispatch(state, action)
       end
-      def dispatch(state, :increment) do
-        Map.update!(state, :age, &(&1 + 1))
-      end
+
       defp process_entries(entries) do
         for {pid, _id} <- entries do
           process(pid, default_action())
