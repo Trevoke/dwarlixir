@@ -8,16 +8,14 @@ defmodule Ecs.System do
     quote do
       @behaviour Ecs.System
       def process do
-        Registry.dispatch(
-          Ecs.Registry,
-          key(),
-          &process_entries/1,
-          parallel: true)
+        key()
+        |> Ecs.GlobalState.get_components_by_type
+        |> process_entries
       end
-      def process(pid, action) do
+      def process(component, action) do
         Task.start(fn ->
-          new_state = dispatch(pid, action)
-          Ecs.Component.update(pid, new_state)
+          new_state = dispatch(component.state, action)
+          Ecs.GlobalState.save_component(%{component | state: new_state})
         end)
       end
 
@@ -26,10 +24,9 @@ defmodule Ecs.System do
         dispatch(state, action)
       end
 
-      defp process_entries(entries) do
-        for {pid, _id} <- entries do
-          process(pid, default_action())
-        end
+      @spec process_entries([Ecs.Component.t]) :: :ok
+      defp process_entries(components) do
+        Enum.each(components, &process(&1, default_action()))
       end
     end
   end
