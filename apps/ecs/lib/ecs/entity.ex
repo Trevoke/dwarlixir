@@ -13,13 +13,19 @@ defmodule Ecs.Entity do
   }
 
   @doc "Creates a new entity"
-  @spec build(components) :: t
-  def build(components) do
+  @spec new(components) :: t
+  def new(components: components) do
     %Ecs.Entity{
       id: UUID.uuid4(:hex),
-      components: components
+      components: build(components)
     }
   end
+
+  @spec new(Ecs.Component) :: t
+  def new(component), do: new(components: [component])
+
+  @spec new :: t
+  def new, do: new(components: [])
 
   @doc "Add components at runtime"
   def add(%Ecs.Entity{ id: id, components: components}, component) do
@@ -27,6 +33,12 @@ defmodule Ecs.Entity do
       id: id,
       components: [component | components]
     }
+  end
+
+  @doc "Check if an entity has an instance of a given component"
+  @spec has_component?(t, Ecs.Component) :: boolean
+  def has_component?(entity, component) do
+    Enum.member?(entity.components, component)
   end
 
   @doc "Pulls the latest component states"
