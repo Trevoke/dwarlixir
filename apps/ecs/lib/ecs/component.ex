@@ -53,4 +53,24 @@ defmodule Ecs.Component do
     :ok = Ecs.GlobalState.save_component(component)
     component
   end
+
+  # defimpl Inspect do
+  #   import Inspect.Algebra
+  #   def inspect(component, opts) do
+  #     simple_module =
+  #       component.type
+  #       |> Atom.to_string
+  #       |> String.split(".")
+  #       |> List.last
+  #     properties =
+  #       component.state
+  #       |> Map.put(:id, component.id)
+  #       #|> Map.to_list
+  #     concat [
+  #       "%",
+  #       simple_module,
+  #       surround("{", to_doc(properties, opts), "}"),#, opts, fn i, _opts -> to_string(i) end),
+  #     ]
+  #   end
+  # end
 end

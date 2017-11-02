@@ -12,12 +12,6 @@ defmodule Ecs.System do
         |> Ecs.GlobalState.get_components_by_type
         |> process_entries
       end
-      def process(component, action) do
-        Task.start(fn ->
-          new_state = dispatch(component.state, action)
-          Ecs.GlobalState.save_component(%{component | state: new_state})
-        end)
-      end
 
       def dispatch(pid, action) when is_pid(pid) do
         state = Ecs.Component.get(pid)
@@ -26,7 +20,18 @@ defmodule Ecs.System do
 
       @spec process_entries([Ecs.Component.t]) :: :ok
       defp process_entries(components) do
-        Enum.each(components, &process(&1, default_action()))
+        #TODO at some point, wonder if batch-saving components here would be nicer.
+        #I bet it would be.
+        components
+        |> Enum.map(&async_process(&1, default_action()))
+        |> Enum.map(&Task.await(&1))
+      end
+
+      defp async_process(component, action) do
+        Task.async(fn ->
+          new_state = dispatch(component.state, action)
+          Ecs.GlobalState.save_component(%{component | state: new_state})
+        end)
       end
     end
   end

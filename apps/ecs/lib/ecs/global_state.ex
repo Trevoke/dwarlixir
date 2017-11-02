@@ -10,7 +10,7 @@ defmodule Ecs.GlobalState do
   end
 
   def get_components_by_type(type) do
-    [components] = :ets.match(Ecs.GlobalState, {{type, :'_'}, :'$1'})
+    components = List.flatten :ets.match(Ecs.GlobalState, {{type, :'_'}, :'$1'})
     components
   end
 
