@@ -73,6 +73,11 @@ defmodule Ecs.Entity do
     |> Enum.member?(component)
   end
 
+  @spec find_component(t, Ecs.Component) :: Ecs.Component
+  def find_component(entity, component) do
+    Enum.find(entity.components, &(&1.type == component))
+  end
+
   @doc "Pulls the latest component states"
   @spec reload(t) :: t
   def reload(%Ecs.Entity{ id: _id, components: components} = entity) do
