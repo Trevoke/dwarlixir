@@ -19,10 +19,7 @@ defmodule Ecs.System do
 
       @spec processable_by_system(entities :: [ Entity.t ]) :: [ Entity.t ]
       defp processable_by_system(entities) do
-        Enum.filter(entities, fn(entity) ->
-          Enum.all?(aspect().with, &Entity.has_component?(entity, &1)) &&
-            !Enum.any?(aspect().without, &Entity.has_component?(entity, &1))
-        end)
+        Enum.filter(entities, &Entity.match_aspect?(&1, aspect()))
       end
 
       defp async_process(entity, action) do

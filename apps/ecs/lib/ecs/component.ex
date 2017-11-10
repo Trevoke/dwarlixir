@@ -7,7 +7,7 @@ defmodule Ecs.Component do
 
   @type params :: map()
   @type id :: String.t
-  @type component_type :: String.t
+  @type component_type :: atom()
   @type state :: map()
   @type t :: %__MODULE__{
     type: component_type,
@@ -20,7 +20,7 @@ defmodule Ecs.Component do
   defmacro __using__(_options) do
     quote do
       @behaviour Ecs.Component
-      def new(initial_state \\ %{}) do
+      def new(initial_state \\ default_value()) do
         Ecs.Component.new(
           __MODULE__,
           Map.merge(initial_state, default_value())

@@ -16,17 +16,19 @@ defmodule Ecs.Entity do
   defmodule InvalidComponentError do
     @moduledoc "Thrown if an invalid term is given to the `new` function."
     defexception [:message]
-    def exception(thing_that_got_passed_in_to_new) do
-      msg = "Cannot initialize a new Entity with '#{thing_that_got_passed_in_to_new}'"
+    def exception(not_a_component) do
+      msg = "Cannot initialize a new Entity with '#{inspect not_a_component}'"
       %InvalidComponentError{message: msg}
     end
   end
 
   @doc "Creates a new entity"
   @spec new(components) :: t
-  def new(components: components) do
+  def new(components: components) when is_list(components) do
     build(components)
   end
+
+  def new(components) when is_list(components), do: new(components: components)
 
   @spec new(uninitialized_component) :: t
   def new(component), do: new(components: [component])
@@ -57,23 +59,29 @@ defmodule Ecs.Entity do
 
   def id, do: UUID.uuid4(:hex)
 
-  @doc "Add components at runtime"
-  def add(%Ecs.Entity{ id: id, components: components}, component) do
-    %Ecs.Entity{
-      id: id,
-      components: [component | components]
-    }
+  @doc "Add a component to an entity"
+  @spec add(t, Ecs.Component) :: t
+  def add(%Ecs.Entity{components: components} = entity, component) do
+    %{entity | components: [ component | components]}
   end
 
+  @doc "Checks if an entity matches an aspect"
+  @spec match_aspect?(t, Ecs.Aspect.t) :: boolean
+  def match_aspect?(entity, aspect) do
+    Enum.all?(aspect.with, &has_component?(entity, &1)) &&
+    ! Enum.any?(aspect.without, &has_component?(entity, &1))
+  end
+
+
   @doc "Check if an entity has an instance of a given component"
-  @spec has_component?(t, Ecs.Component) :: boolean
+  @spec has_component?(t, Ecs.Component.t) :: boolean
   def has_component?(entity, component) do
     entity.components
     |> Enum.map(&(&1.type))
     |> Enum.member?(component)
   end
 
-  @spec find_component(t, Ecs.Component) :: Ecs.Component
+  @spec find_component(t, Ecs.Component.t) :: Ecs.Component.t | nil
   def find_component(entity, component) do
     Enum.find(entity.components, &(&1.type == component))
   end
