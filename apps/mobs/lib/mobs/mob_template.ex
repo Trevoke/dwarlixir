@@ -3,8 +3,15 @@ defmodule Mobs.MobTemplate do
   defmacro __using__(_) do
     quote do
       defstruct [
-        :id, :location_id, :lifespan, :gender, :controller, :pregnant,
-        :ticks_to_birth, name: "", exits: []
+        :id,
+        :location_id, # => LocationComponent
+        #:lifespan, # => RaceComponent
+        #:gender, # => Sex / Biology / Placental / Mammal / Sexual / Repro?
+        :controller, # => ControllerComponent / AIComponent
+        #:pregnant, # => PregnancyComponent
+        #:ticks_to_birth, # => PregnancyComponent
+        name: "", # => SocialComponent
+        exits: []
       ]
       use GenServer
 

@@ -1,0 +1,2 @@
+defmodule Mud do
+end
