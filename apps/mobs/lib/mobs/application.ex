@@ -4,7 +4,7 @@ defmodule Mobs.Application do
 
   def start(_type, [] = _options) do
     import Supervisor.Spec, warn: false
-        children = [
+    children = [
       supervisor(Registry, [:unique, Mobs.Registry], id: :mobs),
       supervisor(Mobs.Supervisor, [], restart: :permanent),
       worker(Mobs, [%{spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start)}], restart: :permanent)

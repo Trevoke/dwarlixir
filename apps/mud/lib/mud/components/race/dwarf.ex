@@ -3,5 +3,9 @@ defmodule Mud.Components.Race.Dwarf do
   defstruct [:lifespan]
 
   use Ecs.Component
-  def default_value, do: %{lifespan: 1800 + Enum.random(1..7200)}
+  def default_value do
+    %{
+        lifespan: 1800 + Enum.random(1..7200)
+    }
+  end
 end
