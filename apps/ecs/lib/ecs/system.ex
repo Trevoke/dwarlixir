@@ -12,28 +12,25 @@ defmodule Ecs.System do
       def process(entities) when is_list(entities) do
         entities
         |> processable_by_system
-        |> Enum.map(&async_process(&1, default_action()))
+        |> Enum.map(&Task.async(fn() -> dispatch(&1, default_action()) end))
         |> Enum.map(&Task.await(&1))
       end
-      def process(entity), do: process([entity])
+      def process(entity) do
+        if Entity.match_aspect?(entity, aspect()) do
+          dispatch(entity, default_action())
+        else
+          entity
+        end
+      end
 
       @spec processable_by_system(entities :: [ Entity.t ]) :: [ Entity.t ]
       defp processable_by_system(entities) do
         Enum.filter(entities, &Entity.match_aspect?(&1, aspect()))
       end
-
-      defp async_process(entity, action) do
-        Task.async(fn -> dispatch(entity, action) end)
-      end
     end
-
   end
 
-  def dispatch(pid, action) when is_pid(pid) do
-    state = Component.get(pid)
-    dispatch(state, action)
-  end
+  def dispatch(entity, action), do: raise "What?"
 
   def aspect, do: %Aspect{}
-
 end

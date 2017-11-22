@@ -3,31 +3,64 @@ defmodule Ecs.Entity do
   A base for creating new Entities.
   """
 
-  defstruct [:id, :components]
+  defstruct [:id, components: []]
 
   @type id :: String.t
-  @type uninitialized_component :: struct()
-  @type components :: list(Ecs.Component)
+  @type uninitialized_component :: atom()
+  @type components :: list(Ecs.Component.t)
   @type t :: %Ecs.Entity{
     id: String.t,
     components: components
   }
 
-  defmodule InvalidComponentError do
-    @moduledoc "Thrown if an invalid term is given to the `new` function."
-    defexception [:message]
-    def exception(not_a_component) do
-      msg = "Cannot initialize a new Entity with '#{inspect not_a_component}'"
-      %InvalidComponentError{message: msg}
+  use GenServer
+
+  def init(components) do
+    state = build(components)
+    {:ok, state}
+  end
+
+  def handle_call(:entity, _from, state), do: {:reply, state, state}
+
+  def handle_info({msg, component_type, pubsub}, state) do
+    new_state = case Ecs.Entity.has_component?(state, component_type) do
+                  false -> state
+                  true ->
+                    Enum.reduce(
+                      pubsub[component_type],
+                      state,
+                      fn(sys, acc) -> sys.process(acc) end
+                    )
+                end
+    case Ecs.Entity.find_component(new_state, component_type) do
+      nil -> nil
+      comp -> start_timer_for_component(comp, repeat: true)
+    end
+    {:noreply, new_state}
+  end
+
+  defp start_timer_for_component(
+    %Ecs.Component{type: type, state: state},
+    repeat: repeat?) do
+
+    if state.schedule == :once && repeat? == true do
+      nil
+    else
+      Process.send_after(
+        self(),
+        {state.message, type, state.pubsub},
+        state.delay
+      )
     end
   end
+
 
   @doc "Creates a new entity"
   @spec new(components) :: t
   def new(components: components) when is_list(components) do
-    build(components)
+    {:ok, pid} = GenServer.start(__MODULE__, components)
+    GenServer.call(pid, :entity)
   end
-
   def new(components) when is_list(components), do: new(components: components)
 
   @spec new(uninitialized_component) :: t
@@ -36,33 +69,22 @@ defmodule Ecs.Entity do
   @spec new :: t
   def new, do: new(components: [])
 
-  def build(components) do
+  defp build(components) do
     entity = %Ecs.Entity{id: id()}
-    build(entity, components, [])
-  end
-
-  def build(entity, [], acc) do
-    %{entity | components: acc}
-  end
-
-  def build(entity, [%Ecs.Component{} = hd | tl], acc) do
-    build(entity, tl, [hd | acc])
-  end
-
-  def build(entity, [hd | tl], acc) when is_atom(hd) do
-    build(entity, tl, [hd.new | acc])
-  end
-
-  def build(_entity, [hd | _tl], _acc) do
-    raise InvalidComponentError, hd
+    Enum.reduce(components, entity, fn
+      (%Ecs.Component{} = c, acc) -> Ecs.Entity.add(entity, c)
+      (c, acc) when is_atom(c) -> Ecs.Entity.add(entity, c.new)
+      (c, acc) -> raise Ecs.InvalidComponentError, c
+    end)
   end
 
   def id, do: UUID.uuid4(:hex)
 
-  @doc "Add a component to an entity"
-  @spec add(t, Ecs.Component) :: t
-  def add(%Ecs.Entity{components: components} = entity, component) do
-    %{entity | components: [ component | components]}
+  @doc "Add an initialized component to an entity"
+  @spec add(t, Ecs.Component.t) :: t
+  def add(%Ecs.Entity{components: components} = entity, %Ecs.Component{} = component) do
+    start_timer_for_component(component, repeat: false)
+    %{entity | components: [component | components]}
   end
 
   @doc "Checks if an entity matches an aspect"
@@ -74,25 +96,16 @@ defmodule Ecs.Entity do
 
 
   @doc "Check if an entity has an instance of a given component"
-  @spec has_component?(t, Ecs.Component.t) :: boolean
+  @spec has_component?(t, uninitialized_component) :: boolean
   def has_component?(entity, component) do
     entity.components
     |> Enum.map(&(&1.type))
     |> Enum.member?(component)
   end
 
-  @spec find_component(t, Ecs.Component.t) :: Ecs.Component.t | nil
+  @spec find_component(t, uninitialized_component) :: Ecs.Component.t | nil
   def find_component(entity, component) do
     Enum.find(entity.components, &(&1.type == component))
   end
 
-  @doc "Pulls the latest component states"
-  @spec reload(t) :: t
-  def reload(%Ecs.Entity{ id: _id, components: components} = entity) do
-    updated_components =
-      components
-      |> Enum.map(&Ecs.Component.get(&1.id))
-
-    %{entity | components: updated_components}
-  end
 end

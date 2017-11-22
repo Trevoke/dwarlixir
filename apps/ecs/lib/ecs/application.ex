@@ -6,7 +6,6 @@ defmodule Ecs.Application do
   def start(_type, _args) do
     # List all child processes to be supervised
     children = [
-      {Ecs.GlobalState, []}
     ]
 
     opts = [strategy: :one_for_one, name: Ecs.Supervisor]
