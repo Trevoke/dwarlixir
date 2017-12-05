@@ -4,6 +4,7 @@
   "distillery": {:hex, :distillery, "1.5.2", "eec18b2d37b55b0bcb670cf2bcf64228ed38ce8b046bb30a9b636a6f5a4c0080", [:mix], [], "hexpm"},
   "doc_first_formatter": {:hex, :doc_first_formatter, "0.0.2", "80beee4f52d7038927905e2c2585a21b425e83b02c6949a2d5931f086c991ff4", [:mix], [], "hexpm"},
   "faker": {:hex, :faker, "0.9.0", "b22c55967fbd3413b9e5c121e59e75a553065587cf31e5aa2271b6fae2775cde", [:mix], [], "hexpm"},
+  "gen_stage": {:hex, :gen_stage, "0.12.2", "e0e347cbb1ceb5f4e68a526aec4d64b54ad721f0a8b30aa9d28e0ad749419cbb", [], [], "hexpm"},
   "logger_file_backend": {:hex, :logger_file_backend, "0.0.10", "876f9f84ae110781207c54321ffbb62bebe02946fe3c13f0d7c5f5d8ad4fa910", [:mix], [], "hexpm"},
   "petick": {:hex, :petick, "0.0.1", "f29856643ba55f3fdb8b79ba672b85b9256780a9f4a85e545d9221efbe8f423b", [:mix], [], "hexpm"},
   "table_rex": {:hex, :table_rex, "0.10.0", "d981954370c00645c32ff7719c105db90ba6a9aa3e951c4d68eaeae3e0bfd40f", [:mix], [], "hexpm"},
