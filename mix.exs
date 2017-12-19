@@ -23,6 +23,7 @@ defmodule Dwarlixir.Mixfile do
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false},
       {:credo, "~> 0.8.8", only: [:dev], runtime: false},
       {:distillery, "~> 1.0", runtime: false},
+      {:libgraph, "~> 0.11.1"},
       {:ecstatic, path: "~/src/projects/ecstatic"},
       {:logger_file_backend, "~> 0.0.9"},
       {:faker, "~> 0.9.0"},
