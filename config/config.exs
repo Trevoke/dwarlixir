@@ -22,12 +22,12 @@ config :sasl,
 
 
 # Two options: :short and :long
-config :mobs, lifespan: :short
+#config :mobs, lifespan: :short
 
 # Whether to have mobs auto-spawned when this app starts up
-config :mobs, spawn_on_start: true
+#config :mobs, spawn_on_start: true
 
-config :life, start_heartbeat: true
+#config :life, start_heartbeat: true
 
 config :elixir, ansi_enabled: true
 

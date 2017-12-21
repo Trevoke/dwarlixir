@@ -3,8 +3,8 @@ defmodule Dwarlixir.Mobs.Dwarf do
 
   alias Dwarlixir.Components, as: C
 
-  def default_components, do: [C.Age, C.Mortal]
+  @default_components [C.Age, C.Mortal]
 
-  defp random_lifespan(:short), do: 300 + Enum.random(1..200)
-  defp random_lifespan(_args), do: 1800 + Enum.random(1..7200)
+  #defp random_lifespan(:short), do: 300 + Enum.random(1..200)
+  #defp random_lifespan(_args), do: 1800 + Enum.random(1..7200)
 end
