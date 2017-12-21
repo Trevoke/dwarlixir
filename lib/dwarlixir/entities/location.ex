@@ -1,4 +1,4 @@
 defmodule Dwarlixir.Entities.Location do
   use Ecstatic.Entity
-  def default_components: [Container]
+  def default_components, do: [Container]
 end

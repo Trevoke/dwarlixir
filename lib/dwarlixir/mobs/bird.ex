@@ -3,7 +3,7 @@ defmodule Dwarlixir.Mobs.Bird do
 
   alias Dwarlixir.Components, as: C
 
-  def default_components: [C.Age, C.Mortal]
+  def default_components, do: [C.Age, C.Mortal]
 
 
   # TODO reproduction will involve laying eggs

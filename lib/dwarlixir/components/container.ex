@@ -1,4 +1,4 @@
 defmodule Dwarlixir.Components.Container do
-  use Ecstatic.Components
-  def default_value: %{}
+  use Ecstatic.Component
+  def default_value, do: %{}
 end

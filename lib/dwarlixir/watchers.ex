@@ -1,5 +1,5 @@
 defmodule Dwarlixir.Watchers do
-  use Ecstatic.Watchers
+  use Ecstatic.Watcher
 
   alias Dwarlixir.Components, as: C
   alias Dwarlixir.Systems, as: S
