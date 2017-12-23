@@ -2,6 +2,8 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
+config :ecstatic, :watchers, fn() -> Dwarlixir.Watchers.watchers end
+
 config :logger,
    handle_otp_reports: true,
    handle_sasl_reports: true
