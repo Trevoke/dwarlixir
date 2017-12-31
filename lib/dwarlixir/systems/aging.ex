@@ -1,4 +1,4 @@
-defmodule Dwarlixir.Systems.StartAgingTick do
+defmodule Dwarlixir.Systems.Aging do
   use Ecstatic.System
 
   alias Dwarlixir.Components, as: C
