@@ -9,6 +9,6 @@ defmodule Dwarlixir.Watchers do
     run: S.Dying,
     when: fn(_e, c) -> c.state.age > c.state.life_expectancy end
 
-  watch_component C.Age, :updated,
-  fn(_e, post) -> post.state.age > post.state.life_expectancy end, S.OldAgeSystem
+  # watch_component C.Age, :updated,
+  # fn(_e, post) -> post.state.age > post.state.life_expectancy end, S.OldAgeSystem
 end
