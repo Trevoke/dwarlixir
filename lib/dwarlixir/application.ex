@@ -9,14 +9,22 @@ defmodule Dwarlixir.Application do
     import Supervisor.Spec, warn: false
 
     children = [
-      supervisor(Ecstatic.Supervisor, []),
-      #supervisor(Registry, [:unique, World.LocationRegistry], id: :location_registry),
-      #supervisor(Registry, [:unique, World.PathwayRegistry], id: :pathway_registry),
-      #supervisor(Registry, [:duplicate, World.Registry], id: :world_registry),
-      #supervisor(World.Supervisor, []),
-      #worker(World, [%{init: Utils.Config.get(:dwarlixir, :world)[:init]}]),
+      Ecstatic.Supervisor,
+      {Registry, keys: :unique, name: Registry.HumanControllers},
+      {Registry, keys: :unique, name: Registry.Controllers},
+      # You know what, the world supervisor needs to do
+      # all this, and I need a locationsupervisor
+      # that is a dynamic supervisor
+      {Registry, keys: :unique, name: World.LocationRegistry},
+      {Registry, keys: :unique, name: World.PathwayRegistry},
+      {Registry, keys: :duplicate, name: World.Registry},
+      World.Supervisor,
+      {World, %{init: Utils.Config.get(:dwarlixir, :world)[:init]}},
 
-      #supervisor(Registry, [:unique, Mobs.Registry], id: :mobs),
+      {Registry, keys: :unique, name: Mobs.Registry},
+
+      {Connections.Tcp, 4040},
+
       #supervisor(Mobs.Supervisor, [], restart: :permanent),
       #worker(Mobs, [%{spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start)}], restart: :permanent),
 
@@ -28,10 +36,6 @@ defmodule Dwarlixir.Application do
 
       #worker(Ecosystem, [%{}], restart: :permanent),
 
-      #supervisor(Task.Supervisor, [[name: Connections.TaskSupervisor]]),
-      supervisor(Registry, [:unique, Registry.HumanControllers], id: :human_controllers_registry),
-      supervisor(Registry, [:duplicate, Registry.Controllers], id: :controllers_registry),
-      worker(Task, [Connections.Tcp, :accept, [4040]])
     ]
 
     opts = [strategy: :one_for_one, name: Dwarlixir.Supervisor]

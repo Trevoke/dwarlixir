@@ -3,14 +3,15 @@ defmodule Dwarlixir.World.Supervisor do
   use Supervisor
 
   def start_link(opts \\ %{}) do
-    location_spec =
-      Supervisor.child_spec(
-        World.Location,
-        start: {World.Location, :start_link, []}
-      )
+    children = [
+      World.Location
+    ]
 
+    # TODO this is a simple_one_for_one,
+    # was it a mistake to move the registries in here?
+    # How about the world?
     Supervisor.start_link(
-      [location_spec],
+      children,
       strategy: :simple_one_for_one,
       name: __MODULE__
     )
