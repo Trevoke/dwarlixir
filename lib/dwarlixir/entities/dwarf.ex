@@ -1,4 +1,4 @@
-defmodule Dwarlixir.Mobs.Dwarf do
+defmodule Dwarlixir.Entities.Dwarf do
   use Ecstatic.Entity
 
   alias Dwarlixir.Components, as: C

@@ -1,15 +1,10 @@
-defmodule Dwarlixir.Entities.Bird do
+defmodule Dwarlixir.Entities.PlayerCharacter do
   use Ecstatic.Entity
 
   alias Dwarlixir.Components, as: C
 
-  @default_components [C.Age, C.Mortal]
-
-
-  # TODO reproduction will involve laying eggs
-
+  @default_components [C.Mortal]
 
   #defp random_lifespan(:short), do: 300 + Enum.random(1..200)
   #defp random_lifespan(_args), do: 1800 + Enum.random(1..7200)
-
 end

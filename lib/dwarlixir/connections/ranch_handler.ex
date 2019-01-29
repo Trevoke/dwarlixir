@@ -1,13 +1,13 @@
 defmodule Dwarlixir.Connections.RanchHandler do
 
-  alias Dwarlixir.{Controllers, World}
+  alias Dwarlixir.{World, Controllers.Human}
 
   def start_link(ref, socket, transport, opts) do
     pid = spawn_link(__MODULE__, :init, [ref, socket, transport, opts])
     {:ok, pid}
   end
 
-  def init(ref, socket, transport, _Opts = []) do
+  def init(ref, socket, transport, _opts = []) do
     :ok = :ranch.accept_ack(ref)
     loop(socket, transport)
   end
@@ -15,11 +15,9 @@ defmodule Dwarlixir.Connections.RanchHandler do
   def loop(socket, transport) do
     write_line(transport, socket, "Choose a username: ")
     {:ok, username} = read_line(transport, socket)
-    case Controllers.Human.log_in(username, "password", socket) do
+    case Human.log_in(username, "password", transport, socket) do
       {:ok, user_id} ->
-        Controllers.Human.handle(user_id, {:input, "help"})
-        room = World.random_room_id
-        Controllers.Human.join_room(user_id, room)
+        Human.handle(user_id, {:input, "help"})
         loop_connection(transport, socket, user_id)
       {:error, :username_taken} ->
         write_line(transport, socket, "Username already online. Try another.\n")
@@ -36,7 +34,7 @@ defmodule Dwarlixir.Connections.RanchHandler do
   def loop_connection(transport, socket, user_id) do
     case read_line(transport, socket) do
       {:ok, input} ->
-        Controllers.Human.handle(user_id, {:input, input})
+        Human.handle(user_id, {:input, input})
         loop_connection(transport, socket, user_id)
       {:error, :closed} -> nil
     end

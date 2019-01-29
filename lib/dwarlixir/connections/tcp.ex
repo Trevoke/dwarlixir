@@ -15,7 +15,7 @@ defmodule Dwarlixir.Connections.Tcp do
     opts = [port: port]
     {:ok, _} =
       :ranch.start_listener(
-        DConnTCP,
+        :dwarlixir_tcp,
         100,
         :ranch_tcp,
         opts,

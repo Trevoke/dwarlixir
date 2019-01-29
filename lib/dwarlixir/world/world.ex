@@ -96,4 +96,11 @@ defmodule Dwarlixir.World do
   def partial_pathway(from_id, name) do
     %{from_id: from_id, name: name}
   end
+
+  def random_room_id do
+    1
+    # Registry.match(World.Registry, "location", :_)
+    # |> Enum.map(fn({_, id}) -> id end)
+    # |> Enum.random
+  end
 end
