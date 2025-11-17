@@ -25,10 +25,9 @@ defmodule Dwarlixir.Application do
 
       {Connections.Tcp, 4040},
 
-      # Mobs.Supervisor and Mobs were deleted during ECS migration (commit 20a1b5a)
-      # TODO: Need to reimplement mob spawning system for ECS
-      # Mobs.Supervisor,
-      # {Mobs, %{spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start)}},
+      # ECS-based mob spawning system
+      Mobs.Supervisor,
+      {Mobs, %{spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start)}},
 
       Life.Reaper,
       {Registry, keys: :duplicate, name: Registry.Tick},
