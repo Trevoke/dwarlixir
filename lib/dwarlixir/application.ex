@@ -25,16 +25,18 @@ defmodule Dwarlixir.Application do
 
       {Connections.Tcp, 4040},
 
-      #supervisor(Mobs.Supervisor, [], restart: :permanent),
-      #worker(Mobs, [%{spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start)}], restart: :permanent),
+      # Mobs.Supervisor and Mobs were deleted during ECS migration (commit 20a1b5a)
+      # TODO: Need to reimplement mob spawning system for ECS
+      # Mobs.Supervisor,
+      # {Mobs, %{spawn_on_start: Utils.Config.get(:mobs, :spawn_on_start)}},
 
-      #worker(Life.Reaper, [], restart: :permanent),
-      #supervisor(Registry, [:duplicate, Registry.Tick], id: :tick),
-      #worker(Life.Timers, [%{start_heartbeat: Utils.Config.get(:life, :start_heartbeat)}], restart: :permanent),
+      Life.Reaper,
+      {Registry, keys: :duplicate, name: Registry.Tick},
+      {Life.Timers, %{start_heartbeat: Utils.Config.get(:life, :start_heartbeat)}},
 
-      #supervisor(Registry, [:unique, Registry.Items], id: :items),
+      {Registry, keys: :unique, name: Registry.Items},
 
-      #worker(Ecosystem, [%{}], restart: :permanent),
+      {Ecosystem, %{}},
 
     ]
 

@@ -1,4 +1,4 @@
-defmodule Dwarlixir.Systems.OldAge do
+defmodule Dwarlixir.Systems.Dying do
   use Ecstatic.System
 
   alias Dwarlixir.Components, as: C

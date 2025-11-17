@@ -25,7 +25,7 @@ defmodule Dwarlixir.Mixfile do
       {:distillery, "~> 1.0", runtime: false},
       {:libgraph, "~> 0.11.1"},
       {:ranch, "~> 1.7"},
-      {:ecstatic, path: "~/src/projects/ecstatic"},
+      {:ecstatic, "~> 0.1.0"},
       {:logger_file_backend, "~> 0.0.9"},
       {:faker, "~> 0.9.0"},
       {:uuid, "~> 1.1"},
